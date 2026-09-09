@@ -13,7 +13,7 @@ public partial class AppSettings : ObservableObject
 
     /// <summary>窗口左上角显示的名称。</summary>
     [ObservableProperty]
-    private string _appTitle = "游戏收藏管理";
+    private string _appTitle = "旮旯给木管理";
 
     /// <summary>应用图标文件名(位于 data\icons\),null 表示默认图标。</summary>
     [ObservableProperty]

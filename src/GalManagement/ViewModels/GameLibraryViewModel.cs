@@ -12,7 +12,7 @@ public record StatusFilterOption(string Display, GameStatus? Value)
     public override string ToString() => Display;
 }
 
-public record PlatformOption(string Display, string? Value)
+public record DeveloperOption(string Display, string? Value)
 {
     public override string ToString() => Display;
 }
@@ -48,10 +48,10 @@ public partial class GameLibraryViewModel : ObservableObject
     [ObservableProperty]
     private StatusFilterOption _selectedStatus;
 
-    public ObservableCollection<PlatformOption> Platforms { get; } = new();
+    public ObservableCollection<DeveloperOption> Developers { get; } = new();
 
     [ObservableProperty]
-    private PlatformOption _selectedPlatform;
+    private DeveloperOption _selectedDeveloper;
 
     public IReadOnlyList<SortOption> SortOptions { get; } =
     [
@@ -85,7 +85,7 @@ public partial class GameLibraryViewModel : ObservableObject
         _coverService = coverService;
         _launcher = launcher;
         _selectedStatus = StatusFilterOptions[0];
-        _selectedPlatform = new PlatformOption("全部平台", null);
+        _selectedDeveloper = new DeveloperOption("全部开发商", null);
         _selectedSort = SortOptions[0];
 
         AddCommand = new RelayCommand(() => EditRequested?.Invoke(null));
@@ -105,7 +105,7 @@ public partial class GameLibraryViewModel : ObservableObject
 
     partial void OnSearchTextChanged(string value) => Reload();
     partial void OnSelectedStatusChanged(StatusFilterOption value) => Reload();
-    partial void OnSelectedPlatformChanged(PlatformOption value) => Reload();
+    partial void OnSelectedDeveloperChanged(DeveloperOption value) => Reload();
     partial void OnSelectedSortChanged(SortOption value) => Reload();
     partial void OnSelectedGameChanged(Game? value)
     {
@@ -119,7 +119,7 @@ public partial class GameLibraryViewModel : ObservableObject
         {
             NameKeyword = SearchText,
             Status = SelectedStatus.Value,
-            Platform = SelectedPlatform.Value,
+            Developer = SelectedDeveloper.Value,
             SortBy = SelectedSort.SortBy,
             Ascending = SelectedSort.Ascending,
         };
@@ -132,7 +132,7 @@ public partial class GameLibraryViewModel : ObservableObject
             Games.Add(g);
         }
 
-        RefreshPlatforms();
+        RefreshDevelopers();
     }
 
     private void LaunchGame(Game? game)
@@ -168,16 +168,16 @@ public partial class GameLibraryViewModel : ObservableObject
         Reload();
     }
 
-    private void RefreshPlatforms()
+    private void RefreshDevelopers()
     {
-        var current = SelectedPlatform.Value;
-        var all = new List<PlatformOption> { new("全部平台", null) };
-        all.AddRange(_repo.GetDistinctPlatforms().Select(p => new PlatformOption(p, p)));
+        var current = SelectedDeveloper.Value;
+        var all = new List<DeveloperOption> { new("全部开发商", null) };
+        all.AddRange(_repo.GetDistinctDevelopers().Select(p => new DeveloperOption(p, p)));
 
-        Platforms.Clear();
+        Developers.Clear();
         foreach (var o in all)
-            Platforms.Add(o);
+            Developers.Add(o);
 
-        SelectedPlatform = Platforms.FirstOrDefault(o => o.Value == current) ?? Platforms[0];
+        SelectedDeveloper = Developers.FirstOrDefault(o => o.Value == current) ?? Developers[0];
     }
 }

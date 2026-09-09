@@ -49,10 +49,10 @@
                     </StackPanel>
 
                     <StackPanel Margin="16,0,0,0">
-                        <TextBlock Text="平台" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="2,0,0,5"/>
+                        <TextBlock Text="开发商" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="2,0,0,5"/>
                         <ComboBox Style="{StaticResource GlassComboBox}" MinWidth="120"
-                                  ItemsSource="{Binding Platforms}"
-                                  SelectedItem="{Binding SelectedPlatform}"
+                                  ItemsSource="{Binding Developers}"
+                                  SelectedItem="{Binding SelectedDeveloper}"
                                   DisplayMemberPath="Display"/>
                     </StackPanel>
 
@@ -203,8 +203,8 @@
                                     </Border>
                                 </StackPanel>
 
-                                <TextBlock Text="平台" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,16,0,4" FontSize="12"/>
-                                <TextBlock Text="{Binding SelectedGame.Platform}" Foreground="{DynamicResource TextPrimaryBrush}" TextWrapping="Wrap"/>
+                                <TextBlock Text="开发商" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,16,0,4" FontSize="12"/>
+                                <TextBlock Text="{Binding SelectedGame.Developer}" Foreground="{DynamicResource TextPrimaryBrush}" TextWrapping="Wrap"/>
 
                                 <TextBlock Text="通关日期" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,12,0,4" FontSize="12"/>
                                 <TextBlock Text="{Binding SelectedGame.CompletedDate, StringFormat={}{0:yyyy-MM-dd}}"

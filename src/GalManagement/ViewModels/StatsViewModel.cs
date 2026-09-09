@@ -12,9 +12,9 @@ public class RatingBar
     public double Ratio { get; set; }
 }
 
-public class PlatformBar
+public class DeveloperBar
 {
-    public string Platform { get; set; } = string.Empty;
+    public string Developer { get; set; } = string.Empty;
     public int Count { get; set; }
     public double Ratio { get; set; }
 }
@@ -42,7 +42,7 @@ public partial class StatsViewModel : ObservableObject
     private int _shelvedCount;
 
     public ObservableCollection<RatingBar> RatingDistribution { get; } = new();
-    public ObservableCollection<PlatformBar> PlatformDistribution { get; } = new();
+    public ObservableCollection<DeveloperBar> DeveloperDistribution { get; } = new();
 
     public StatsViewModel(GameRepository repo)
     {
@@ -86,22 +86,22 @@ public partial class StatsViewModel : ObservableObject
             });
         }
 
-        var platformCounts = games
-            .Where(g => !string.IsNullOrWhiteSpace(g.Platform))
-            .GroupBy(g => g.Platform!)
-            .Select(g => new { Platform = g.Key, Count = g.Count() })
+        var developerCounts = games
+            .Where(g => !string.IsNullOrWhiteSpace(g.Developer))
+            .GroupBy(g => g.Developer!)
+            .Select(g => new { Developer = g.Key, Count = g.Count() })
             .OrderByDescending(g => g.Count)
             .ToList();
 
-        var maxPlatform = platformCounts.Count > 0 ? platformCounts.Max(x => x.Count) : 0;
-        PlatformDistribution.Clear();
-        foreach (var p in platformCounts)
+        var maxDeveloper = developerCounts.Count > 0 ? developerCounts.Max(x => x.Count) : 0;
+        DeveloperDistribution.Clear();
+        foreach (var d in developerCounts)
         {
-            PlatformDistribution.Add(new PlatformBar
+            DeveloperDistribution.Add(new DeveloperBar
             {
-                Platform = p.Platform,
-                Count = p.Count,
-                Ratio = maxPlatform > 0 ? (double)p.Count / maxPlatform : 0,
+                Developer = d.Developer,
+                Count = d.Count,
+                Ratio = maxDeveloper > 0 ? (double)d.Count / maxDeveloper : 0,
             });
         }
     }

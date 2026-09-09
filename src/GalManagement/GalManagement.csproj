@@ -8,6 +8,8 @@
     <UseWPF>true</UseWPF>
     <ApplicationIcon>app.ico</ApplicationIcon>
     <Version>1.0.1</Version>
+    <AssemblyTitle>旮旯给木管理</AssemblyTitle>
+    <Product>旮旯给木管理</Product>
   </PropertyGroup>
 
   <ItemGroup>

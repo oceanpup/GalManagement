@@ -98,10 +98,10 @@
                         </ComboBox.ItemTemplate>
                     </ComboBox>
 
-                    <!-- 平台 -->
-                    <TextBlock Text="平台" Margin="0,16,0,6" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    <!-- 开发商 -->
+                    <TextBlock Text="开发商" Margin="0,16,0,6" Foreground="{DynamicResource TextSecondaryBrush}"/>
                     <TextBox Style="{StaticResource GlassTextBox}"
-                             Text="{Binding Current.Platform, UpdateSourceTrigger=PropertyChanged}"/>
+                             Text="{Binding Current.Developer, UpdateSourceTrigger=PropertyChanged}"/>
 
                     <!-- 启动路径 -->
                     <TextBlock Text="启动路径" Margin="0,16,0,6" Foreground="{DynamicResource TextSecondaryBrush}"/>

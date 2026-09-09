@@ -28,7 +28,7 @@ public partial class Game : ObservableObject
     private GameStatus _status;
 
     [ObservableProperty]
-    private string? _platform;
+    private string? _developer;
 
     [ObservableProperty]
     private DateTime? _completedDate;

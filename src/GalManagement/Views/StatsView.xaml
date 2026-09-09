@@ -74,12 +74,12 @@
                 </StackPanel>
             </Border>
 
-            <!-- 平台分布 -->
+            <!-- 开发商分布 -->
             <Border Style="{StaticResource GlassCard}" Padding="20" Margin="0,16,0,0">
                 <StackPanel>
-                    <TextBlock Text="平台分布" Foreground="{DynamicResource TextPrimaryBrush}"
+                    <TextBlock Text="开发商分布" Foreground="{DynamicResource TextPrimaryBrush}"
                                FontSize="16" FontWeight="SemiBold"/>
-                    <ItemsControl ItemsSource="{Binding PlatformDistribution}" Margin="0,14,0,0">
+                    <ItemsControl ItemsSource="{Binding DeveloperDistribution}" Margin="0,14,0,0">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Grid Margin="0,3,0,0">
@@ -88,7 +88,7 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="{Binding Platform}" Foreground="{DynamicResource TextSecondaryBrush}"
+                                    <TextBlock Text="{Binding Developer}" Foreground="{DynamicResource TextSecondaryBrush}"
                                                VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                                     <ProgressBar Grid.Column="1" Height="14" Minimum="0" Maximum="1"
                                                  Value="{Binding Ratio}"

@@ -61,7 +61,7 @@ public partial class GameEditViewModel : ObservableObject
             Summary = game.Summary,
             LaunchPath = game.LaunchPath,
             Status = game.Status,
-            Platform = game.Platform,
+            Developer = game.Developer,
             CompletedDate = game.CompletedDate,
             PlayTimeHours = game.PlayTimeHours,
             CreatedAt = game.CreatedAt,

@@ -9,8 +9,9 @@ obj/
 *.suo
 Thumbs.db
 
-## Runtime data (personal library DB, covers, backgrounds, icons)
-data/
+## Runtime data (personal library DB, covers, backgrounds, icons).
+## Anchored to repo root so the nested source folder src/**/Data/ is still tracked.
+/data/
 dist/data/
 
 ## PDB not tracked; dist exe is the artifact
