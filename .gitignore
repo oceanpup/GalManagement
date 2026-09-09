@@ -1,0 +1,17 @@
+## Build results
+bin/
+obj/
+
+## IDE / OS
+.vs/
+.vscode/
+*.user
+*.suo
+Thumbs.db
+
+## Runtime data (personal library DB, covers, backgrounds, icons)
+data/
+dist/data/
+
+## PDB not tracked; dist exe is the artifact
+dist/*.pdb

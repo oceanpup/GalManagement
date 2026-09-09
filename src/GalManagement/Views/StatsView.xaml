@@ -1,0 +1,109 @@
+<UserControl x:Class="GalManagement.Views.StatsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             FontFamily="Microsoft YaHei UI">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+
+            <!-- 数字卡片 -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Style="{StaticResource GlassCard}" Padding="18" Margin="0,0,9,0">
+                    <StackPanel>
+                        <TextBlock Text="总游戏数" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="13"/>
+                        <TextBlock Text="{Binding TotalCount}" Foreground="{DynamicResource TextPrimaryBrush}"
+                                   FontSize="30" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="1" Style="{StaticResource GlassCard}" Padding="18" Margin="9,0,9,0">
+                    <StackPanel>
+                        <TextBlock Text="平均评分" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="13"/>
+                        <TextBlock Text="{Binding AverageRating, StringFormat={}{0:F1}}" Foreground="{DynamicResource TextPrimaryBrush}"
+                                   FontSize="30" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="2" Style="{StaticResource GlassCard}" Padding="18" Margin="9,0,9,0">
+                    <StackPanel>
+                        <TextBlock Text="在玩" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="13"/>
+                        <TextBlock Text="{Binding PlayingCount}" Foreground="{DynamicResource TextPrimaryBrush}"
+                                   FontSize="30" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="3" Style="{StaticResource GlassCard}" Padding="18" Margin="9,0,0,0">
+                    <StackPanel>
+                        <TextBlock Text="已通关" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="13"/>
+                        <TextBlock Text="{Binding CompletedCount}" Foreground="{DynamicResource TextPrimaryBrush}"
+                                   FontSize="30" FontWeight="SemiBold" Margin="0,8,0,0"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- 评分分布 -->
+            <Border Style="{StaticResource GlassCard}" Padding="20" Margin="0,16,0,0">
+                <StackPanel>
+                    <TextBlock Text="评分分布" Foreground="{DynamicResource TextPrimaryBrush}"
+                               FontSize="16" FontWeight="SemiBold"/>
+                    <ItemsControl ItemsSource="{Binding RatingDistribution}" Margin="0,14,0,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,3,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="26"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding Score}" Foreground="{DynamicResource TextSecondaryBrush}"
+                                               VerticalAlignment="Center"/>
+                                    <ProgressBar Grid.Column="1" Height="14" Minimum="0" Maximum="1"
+                                                 Value="{Binding Ratio}"
+                                                 Foreground="{DynamicResource AccentBrush}"
+                                                 Background="{DynamicResource InputBackgroundBrush}"
+                                                 BorderThickness="0" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding Count}" Foreground="{DynamicResource TextSecondaryBrush}"
+                                               VerticalAlignment="Center" Margin="10,0,0,0" MinWidth="20" TextAlignment="Right"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <!-- 平台分布 -->
+            <Border Style="{StaticResource GlassCard}" Padding="20" Margin="0,16,0,0">
+                <StackPanel>
+                    <TextBlock Text="平台分布" Foreground="{DynamicResource TextPrimaryBrush}"
+                               FontSize="16" FontWeight="SemiBold"/>
+                    <ItemsControl ItemsSource="{Binding PlatformDistribution}" Margin="0,14,0,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,3,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding Platform}" Foreground="{DynamicResource TextSecondaryBrush}"
+                                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                    <ProgressBar Grid.Column="1" Height="14" Minimum="0" Maximum="1"
+                                                 Value="{Binding Ratio}"
+                                                 Foreground="{DynamicResource AccentBrush}"
+                                                 Background="{DynamicResource InputBackgroundBrush}"
+                                                 BorderThickness="0" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding Count}" Foreground="{DynamicResource TextSecondaryBrush}"
+                                               VerticalAlignment="Center" Margin="10,0,0,0" MinWidth="20" TextAlignment="Right"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

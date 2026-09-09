@@ -1,0 +1,243 @@
+<UserControl x:Class="GalManagement.Views.GameLibraryView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             FontFamily="Microsoft YaHei UI">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- 工具栏 -->
+        <Border Grid.Row="0" Style="{StaticResource GlassCard}" Padding="14,12" Margin="0,0,0,12">
+            <StackPanel>
+                <!-- 主行:搜索 + 筛选 + 新增 -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Grid Grid.Column="0">
+                        <TextBox Style="{StaticResource GlassTextBox}" Width="440" HorizontalAlignment="Left"
+                                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Text="搜索游戏名称" VerticalAlignment="Center" Margin="12,0,0,0"
+                                   HorizontalAlignment="Left"
+                                   Foreground="{DynamicResource TextSecondaryBrush}" IsHitTestVisible="False"
+                                   Visibility="{Binding SearchText, Converter={StaticResource NullToVisibility}, ConverterParameter=invert}"/>
+                    </Grid>
+
+                    <Button Grid.Column="1" Style="{StaticResource GlassButton}" Content="筛选" Margin="12,0,0,0"
+                            MinHeight="46" MinWidth="180" Padding="0" FontSize="15"
+                            Command="{Binding ToggleFilterCommand}"/>
+
+                    <Button Grid.Column="2" Style="{StaticResource PrimaryButton}" Content="+ 新增游戏" Margin="12,0,0,0"
+                            MinHeight="46" MinWidth="195" Padding="0" FontSize="15"
+                            Command="{Binding AddCommand}"/>
+                </Grid>
+
+                <!-- 筛选面板 -->
+                <StackPanel Orientation="Horizontal" Margin="2,14,0,0"
+                            Visibility="{Binding IsFilterOpen, Converter={StaticResource BoolToVisibility}}">
+                    <StackPanel>
+                        <TextBlock Text="状态" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="2,0,0,5"/>
+                        <ComboBox Style="{StaticResource GlassComboBox}" MinWidth="120"
+                                  ItemsSource="{Binding StatusFilterOptions}"
+                                  SelectedItem="{Binding SelectedStatus}"
+                                  DisplayMemberPath="Display"/>
+                    </StackPanel>
+
+                    <StackPanel Margin="16,0,0,0">
+                        <TextBlock Text="平台" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="2,0,0,5"/>
+                        <ComboBox Style="{StaticResource GlassComboBox}" MinWidth="120"
+                                  ItemsSource="{Binding Platforms}"
+                                  SelectedItem="{Binding SelectedPlatform}"
+                                  DisplayMemberPath="Display"/>
+                    </StackPanel>
+
+                    <StackPanel Margin="16,0,0,0">
+                        <TextBlock Text="排序" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="2,0,0,5"/>
+                        <ComboBox Style="{StaticResource GlassComboBox}" MinWidth="150"
+                                  ItemsSource="{Binding SortOptions}"
+                                  SelectedItem="{Binding SelectedSort}"
+                                  DisplayMemberPath="Display"/>
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- 主体 -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="340"/>
+                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="360"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- 列表 -->
+            <Border Grid.Column="0" Style="{StaticResource GlassCard}">
+                <ListBox ItemsSource="{Binding Games}"
+                         SelectedItem="{Binding SelectedGame}"
+                         Background="Transparent" BorderThickness="0"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         MouseDoubleClick="GameList_MouseDoubleClick">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                            <Setter Property="Padding" Value="10,8"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListBoxItem">
+                                        <Border x:Name="bd" Background="{TemplateBinding Background}"
+                                                CornerRadius="8" Padding="{TemplateBinding Padding}">
+                                            <ContentPresenter/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="bd" Property="Background" Value="{DynamicResource ButtonHoverBrush}"/>
+                                            </Trigger>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter TargetName="bd" Property="Background" Value="{DynamicResource NavActiveBrush}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="56"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Width="48" Height="64"
+                                        Background="{DynamicResource InputBackgroundBrush}" CornerRadius="6">
+                                    <Image Stretch="UniformToFill">
+                                        <Image.Source>
+                                            <MultiBinding Converter="{StaticResource ThumbnailCrop}">
+                                                <Binding Path="CoverFullPath"/>
+                                                <Binding Path="ThumbOffsetX"/>
+                                                <Binding Path="ThumbOffsetY"/>
+                                            </MultiBinding>
+                                        </Image.Source>
+                                    </Image>
+                                </Border>
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="8,0,0,0">
+                                    <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimaryBrush}"
+                                               TextTrimming="CharacterEllipsis"/>
+                                    <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                                        <Border Background="{Binding EffectiveRating, Converter={StaticResource RatingToBrush}}"
+                                                CornerRadius="4" Padding="6,1">
+                                            <TextBlock Text="{Binding EffectiveRating, StringFormat={}{0:F1}}"
+                                                       Foreground="#FFFFFF" FontSize="11" FontWeight="SemiBold"/>
+                                        </Border>
+                                        <Border Background="{Binding Status, Converter={StaticResource StatusToBrush}}"
+                                                CornerRadius="4" Padding="6,1" Margin="6,0,0,0">
+                                            <TextBlock Text="{Binding Status, Converter={StaticResource StatusToText}}"
+                                                       Foreground="#FFFFFF" FontSize="11"/>
+                                        </Border>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <Button Grid.Column="2" Style="{StaticResource GlassButton}" Content="启动"
+                                        VerticalAlignment="Center" Margin="10,0,0,0"
+                                        MinWidth="56" MinHeight="34" Padding="0" FontSize="13"
+                                        Background="{DynamicResource AccentGlassBrush}"
+                                        Command="{Binding DataContext.LaunchCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                        CommandParameter="{Binding}"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Border>
+
+            <!-- 详情 -->
+            <Border Grid.Column="2" Style="{StaticResource GlassCard}" Padding="20">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- 空状态 / 详情内容 -->
+                    <Grid Grid.Row="0">
+                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
+                                    Visibility="{Binding SelectedGame, Converter={StaticResource NullToVisibility}, ConverterParameter=invert}">
+                            <TextBlock Text="未选择游戏" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="16"/>
+                            <TextBlock Text="在左侧选择或新增一个游戏" Foreground="{DynamicResource TextSecondaryBrush}"
+                                       FontSize="12" Margin="0,8,0,0"/>
+                        </StackPanel>
+
+                        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                      Visibility="{Binding SelectedGame, Converter={StaticResource NullToVisibility}}">
+                            <StackPanel>
+                                <Grid Height="220">
+                                    <Border Background="{DynamicResource InputBackgroundBrush}" CornerRadius="10">
+                                        <Image Source="{Binding SelectedGame.CoverFullPath, Converter={StaticResource ImagePath}}" Stretch="Uniform"/>
+                                    </Border>
+                                    <TextBlock Text="暂无封面" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                               Visibility="{Binding SelectedGame.CoverFullPath, Converter={StaticResource NullToVisibility}, ConverterParameter=invert}"/>
+                                </Grid>
+
+                                <TextBlock Text="{Binding SelectedGame.Name}" FontSize="22" FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,16,0,0" TextWrapping="Wrap"/>
+
+                                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                                    <Border Background="{Binding SelectedGame.EffectiveRating, Converter={StaticResource RatingToBrush}}"
+                                            CornerRadius="4" Padding="8,2">
+                                        <TextBlock Text="{Binding SelectedGame.EffectiveRating, StringFormat={}评分 {0:F1}}"
+                                                   Foreground="#FFFFFF" FontSize="12" FontWeight="SemiBold"/>
+                                    </Border>
+                                    <Border Background="{Binding SelectedGame.Status, Converter={StaticResource StatusToBrush}}"
+                                            CornerRadius="4" Padding="8,2" Margin="8,0,0,0">
+                                        <TextBlock Text="{Binding SelectedGame.Status, Converter={StaticResource StatusToText}}"
+                                                   Foreground="#FFFFFF" FontSize="12"/>
+                                    </Border>
+                                </StackPanel>
+
+                                <TextBlock Text="平台" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,16,0,4" FontSize="12"/>
+                                <TextBlock Text="{Binding SelectedGame.Platform}" Foreground="{DynamicResource TextPrimaryBrush}" TextWrapping="Wrap"/>
+
+                                <TextBlock Text="通关日期" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,12,0,4" FontSize="12"/>
+                                <TextBlock Text="{Binding SelectedGame.CompletedDate, StringFormat={}{0:yyyy-MM-dd}}"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+
+                                <TextBlock Text="游玩时长" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,12,0,4" FontSize="12"/>
+                                <TextBlock Text="{Binding SelectedGame.PlayTimeHours, StringFormat={}{0:F1} 小时}"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+
+                                <TextBlock Text="概述" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,12,0,4" FontSize="12"/>
+                                <TextBlock Text="{Binding SelectedGame.Summary}" Foreground="{DynamicResource TextPrimaryBrush}" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+
+                    <!-- 操作按钮 -->
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+                        <Button Style="{StaticResource GlassButton}" Content="启动" Margin="0,0,12,0"
+                                MinWidth="72" MinHeight="35" Padding="0" FontSize="12"
+                                Background="{DynamicResource AccentGlassBrush}"
+                                Command="{Binding LaunchCommand}"
+                                CommandParameter="{Binding SelectedGame}"/>
+                        <Button Style="{StaticResource GlassButton}" Content="删除"
+                                MinWidth="72" MinHeight="35" Padding="0" FontSize="12"
+                                Background="{DynamicResource DangerGlassBrush}"
+                                Command="{Binding DeleteCommand}"/>
+                        <Button Style="{StaticResource GlassButton}" Content="编辑" Margin="12,0,0,0"
+                                MinWidth="72" MinHeight="35" Padding="0" FontSize="12"
+                                Background="{DynamicResource AccentGlassBrush}"
+                                Command="{Binding EditCommand}"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>
