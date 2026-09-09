@@ -20,9 +20,11 @@ public partial class App : Application
         var themeService = new ThemeService();
         var launcher = new GameLauncherService();
         var iconService = new IconService(db.IconsDirectory);
+        var updater = new UpdateService(db.DataDirectory);
         themeService.Apply(settings.Current.Theme);
+        updater.InitCleanup();
 
-        var mainVm = new MainViewModel(repo, coverService, bgService, themeService, settings, launcher, iconService);
+        var mainVm = new MainViewModel(repo, coverService, bgService, themeService, settings, launcher, iconService, updater);
         var window = new MainWindow(mainVm, repo, reviewRepo, coverService, launcher);
 
         MainWindow = window;

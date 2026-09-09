@@ -48,7 +48,8 @@ public partial class MainViewModel : ObservableObject
         ThemeService themeService,
         SettingsService settingsService,
         GameLauncherService launcher,
-        IconService iconService)
+        IconService iconService,
+        UpdateService updateService)
     {
         _bgService = bgService;
         _themeService = themeService;
@@ -57,7 +58,7 @@ public partial class MainViewModel : ObservableObject
 
         Library = new GameLibraryViewModel(repo, coverService, launcher);
         Stats = new StatsViewModel(repo);
-        Settings = new SettingsViewModel(settingsService.Current, settingsService, iconService);
+        Settings = new SettingsViewModel(settingsService.Current, settingsService, iconService, updateService);
 
         _currentView = Library;
         _backgroundPath = bgService.CurrentBackgroundPath;
