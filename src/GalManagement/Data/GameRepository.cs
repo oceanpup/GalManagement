@@ -20,12 +20,19 @@ public class GameRepository
         var sql = new StringBuilder($"SELECT {Columns} FROM Games");
         var where = new List<string>();
 
-        if (!string.IsNullOrWhiteSpace(filter.NameKeyword))
-            where.Add("Name LIKE @name");
+        if (!string.IsNullOrWhiteSpace(filter.Keyword))
+            where.Add("(Name LIKE @kw OR Developer LIKE @kw OR EXISTS " +
+                      "(SELECT 1 FROM GameTags gt JOIN Tags t ON t.Id = gt.TagId " +
+                      "WHERE gt.GameId = Games.Id AND t.Name LIKE @kw))");
         if (filter.Status.HasValue)
             where.Add("Status = @status");
         if (!string.IsNullOrWhiteSpace(filter.Developer))
             where.Add("Developer = @developer");
+
+        var tagList = filter.Tags?.Where(t => !string.IsNullOrWhiteSpace(t)).ToList() ?? new List<string>();
+        for (var i = 0; i < tagList.Count; i++)
+            where.Add($"EXISTS (SELECT 1 FROM GameTags gt JOIN Tags t ON t.Id = gt.TagId " +
+                      $"WHERE gt.GameId = Games.Id AND t.Name = @tag{i})");
 
         if (where.Count > 0)
             sql.Append(" WHERE ").Append(string.Join(" AND ", where));
@@ -46,12 +53,14 @@ public class GameRepository
         using var cmd = conn.CreateCommand();
         cmd.CommandText = sql.ToString();
 
-        if (!string.IsNullOrWhiteSpace(filter.NameKeyword))
-            cmd.Parameters.AddWithValue("@name", $"%{filter.NameKeyword}%");
+        if (!string.IsNullOrWhiteSpace(filter.Keyword))
+            cmd.Parameters.AddWithValue("@kw", $"%{filter.Keyword}%");
         if (filter.Status.HasValue)
             cmd.Parameters.AddWithValue("@status", filter.Status.Value.ToString());
         if (!string.IsNullOrWhiteSpace(filter.Developer))
             cmd.Parameters.AddWithValue("@developer", filter.Developer);
+        for (var i = 0; i < tagList.Count; i++)
+            cmd.Parameters.AddWithValue($"@tag{i}", tagList[i]);
 
         var list = new List<Game>();
         using var reader = cmd.ExecuteReader();

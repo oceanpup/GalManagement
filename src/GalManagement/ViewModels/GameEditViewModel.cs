@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -10,9 +11,11 @@ namespace GalManagement.ViewModels;
 public partial class GameEditViewModel : ObservableObject
 {
     private readonly GameRepository _repo;
+    private readonly TagRepository _tagRepo;
     private readonly CoverImageService _coverService;
     private readonly GameLauncherService _launcher;
     private readonly string? _originalCoverPath;
+    private readonly List<string> _allTags;
 
     public Game Current { get; }
 
@@ -23,28 +26,50 @@ public partial class GameEditViewModel : ObservableObject
     [ObservableProperty]
     private string? _coverPreviewPath;
 
+    [ObservableProperty]
+    private string _newTag = string.Empty;
+
+    [ObservableProperty]
+    private string? _selectedSuggestion;
+
+    public ObservableCollection<string> TagSuggestions { get; } = new();
+
     public IReadOnlyList<GameStatus> StatusOptions { get; } = Enum.GetValues<GameStatus>();
 
     public RelayCommand PickCoverCommand { get; }
     public RelayCommand PickLaunchCommand { get; }
     public RelayCommand SaveCommand { get; }
     public RelayCommand CancelCommand { get; }
+    public RelayCommand AddTagCommand { get; }
+    public RelayCommand<string> RemoveTagCommand { get; }
 
     public event Action<bool>? RequestClose;
 
-    public GameEditViewModel(Game? game, GameRepository repo, CoverImageService coverService, GameLauncherService launcher)
+    public GameEditViewModel(Game? game, GameRepository repo, TagRepository tagRepo,
+        CoverImageService coverService, GameLauncherService launcher)
     {
         _repo = repo;
+        _tagRepo = tagRepo;
         _coverService = coverService;
         _launcher = launcher;
         Current = CloneOrNew(game);
         _originalCoverPath = Current.CoverPath;
         _coverPreviewPath = coverService.GetFullPath(Current.CoverPath);
 
+        if (!IsNew)
+        {
+            foreach (var t in _tagRepo.GetForGame(Current.Id))
+                Current.Tags.Add(t);
+        }
+        _allTags = _tagRepo.GetAllOrdered();
+        RefreshSuggestions();
+
         PickCoverCommand = new RelayCommand(PickCover);
         PickLaunchCommand = new RelayCommand(PickLaunch);
         SaveCommand = new RelayCommand(Save);
         CancelCommand = new RelayCommand(Cancel);
+        AddTagCommand = new RelayCommand(() => AddTag(NewTag));
+        RemoveTagCommand = new RelayCommand<string>(RemoveTag);
     }
 
     private static Game CloneOrNew(Game? game)
@@ -106,7 +131,56 @@ public partial class GameEditViewModel : ObservableObject
         else
             _repo.Update(Current);
 
+        _tagRepo.SetForGame(Current.Id, Current.Tags);
+
         RequestClose?.Invoke(true);
+    }
+
+    private void AddTag(string? raw)
+    {
+        var name = raw?.Trim() ?? string.Empty;
+        if (name.Length == 0)
+        {
+            NewTag = string.Empty;
+            return;
+        }
+
+        if (!Current.Tags.Any(t => string.Equals(t, name, StringComparison.OrdinalIgnoreCase)))
+            Current.Tags.Add(name);
+
+        NewTag = string.Empty;
+        RefreshSuggestions();
+    }
+
+    private void RemoveTag(string? name)
+    {
+        if (name is null)
+            return;
+
+        var existing = Current.Tags.FirstOrDefault(t => string.Equals(t, name, StringComparison.OrdinalIgnoreCase));
+        if (existing is not null)
+            Current.Tags.Remove(existing);
+
+        RefreshSuggestions();
+    }
+
+    private void RefreshSuggestions()
+    {
+        TagSuggestions.Clear();
+        foreach (var t in _allTags)
+        {
+            if (!Current.Tags.Any(x => string.Equals(x, t, StringComparison.OrdinalIgnoreCase)))
+                TagSuggestions.Add(t);
+        }
+    }
+
+    partial void OnSelectedSuggestionChanged(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return;
+
+        AddTag(value);
+        SelectedSuggestion = null;
     }
 
     private void Cancel()

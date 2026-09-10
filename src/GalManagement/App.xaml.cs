@@ -14,6 +14,7 @@ public partial class App : Application
         var db = new Database();
         var repo = new GameRepository(db);
         var reviewRepo = new ReviewRepository(db);
+        var tagRepo = new TagRepository(db);
         var coverService = new CoverImageService(db.CoversDirectory);
         var settings = new SettingsService(db.DataDirectory);
         var bgService = new BackgroundService(db.BackgroundsDirectory, settings);
@@ -24,8 +25,8 @@ public partial class App : Application
         themeService.Apply(settings.Current.Theme);
         updater.InitCleanup();
 
-        var mainVm = new MainViewModel(repo, coverService, bgService, themeService, settings, launcher, iconService, updater);
-        var window = new MainWindow(mainVm, repo, reviewRepo, coverService, launcher);
+        var mainVm = new MainViewModel(repo, tagRepo, coverService, bgService, themeService, settings, launcher, iconService, updater);
+        var window = new MainWindow(mainVm, repo, reviewRepo, tagRepo, coverService, launcher);
 
         MainWindow = window;
         window.Show();

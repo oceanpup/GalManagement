@@ -103,6 +103,50 @@
                     <TextBox Style="{StaticResource GlassTextBox}"
                              Text="{Binding Current.Developer, UpdateSourceTrigger=PropertyChanged}"/>
 
+                    <!-- 标签 -->
+                    <TextBlock Text="标签" Margin="0,16,0,6" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Style="{StaticResource GlassTextBox}"
+                                 Text="{Binding NewTag, UpdateSourceTrigger=PropertyChanged}"
+                                 KeyDown="TagInput_KeyDown"/>
+                        <Button Grid.Column="1" Style="{StaticResource GlassButton}" Content="添加" Margin="8,0,0,0"
+                                MinWidth="68" MinHeight="42" Padding="0" FontSize="13"
+                                Command="{Binding AddTagCommand}"/>
+                    </Grid>
+
+                    <ComboBox Style="{StaticResource GlassComboBox}" Margin="0,8,0,0"
+                              ItemsSource="{Binding TagSuggestions}"
+                              SelectedItem="{Binding SelectedSuggestion}"/>
+
+                    <ItemsControl ItemsSource="{Binding Current.Tags}" Margin="0,10,0,0">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{DynamicResource NavActiveBrush}"
+                                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                                        CornerRadius="4" Padding="8,3" Margin="0,0,6,6">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding}" FontSize="12" VerticalAlignment="Center"
+                                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                        <Button Content="✕" Margin="6,0,0,0" Padding="0" FontSize="11"
+                                                Background="Transparent" BorderThickness="0" Cursor="Hand"
+                                                Foreground="{DynamicResource TextSecondaryBrush}"
+                                                Command="{Binding DataContext.RemoveTagCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                CommandParameter="{Binding}"/>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
                     <!-- 启动路径 -->
                     <TextBlock Text="启动路径" Margin="0,16,0,6" Foreground="{DynamicResource TextSecondaryBrush}"/>
                     <Grid>

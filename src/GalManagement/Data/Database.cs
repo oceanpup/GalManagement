@@ -123,6 +123,21 @@ public class Database
             alter.CommandText = $"ALTER TABLE GameReviews ADD COLUMN {col} REAL NOT NULL DEFAULT {def}";
             alter.ExecuteNonQuery();
         }
+
+        using var tagCmd = conn.CreateCommand();
+        tagCmd.CommandText = """
+            CREATE TABLE IF NOT EXISTS Tags (
+                Id   INTEGER PRIMARY KEY AUTOINCREMENT,
+                Name TEXT    NOT NULL COLLATE NOCASE UNIQUE
+            );
+            CREATE TABLE IF NOT EXISTS GameTags (
+                GameId INTEGER NOT NULL,
+                TagId  INTEGER NOT NULL,
+                PRIMARY KEY (GameId, TagId)
+            );
+            CREATE INDEX IF NOT EXISTS IX_GameTags_TagId ON GameTags (TagId);
+            """;
+        tagCmd.ExecuteNonQuery();
     }
 
     private static bool ColumnExists(SqliteConnection conn, string table, string column)

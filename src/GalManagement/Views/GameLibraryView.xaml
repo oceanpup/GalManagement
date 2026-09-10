@@ -22,7 +22,7 @@
                     <Grid Grid.Column="0">
                         <TextBox Style="{StaticResource GlassTextBox}" Width="440" HorizontalAlignment="Left"
                                  Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
-                        <TextBlock Text="搜索游戏名称" VerticalAlignment="Center" Margin="12,0,0,0"
+                        <TextBlock Text="搜索名称 / 开发商 / 标签" VerticalAlignment="Center" Margin="18,0,0,0"
                                    HorizontalAlignment="Left"
                                    Foreground="{DynamicResource TextSecondaryBrush}" IsHitTestVisible="False"
                                    Visibility="{Binding SearchText, Converter={StaticResource NullToVisibility}, ConverterParameter=invert}"/>
@@ -63,6 +63,49 @@
                                   SelectedItem="{Binding SelectedSort}"
                                   DisplayMemberPath="Display"/>
                     </StackPanel>
+                </StackPanel>
+
+                <!-- 标签筛选(多选,AND) -->
+                <StackPanel Margin="2,12,0,0"
+                            Visibility="{Binding IsFilterOpen, Converter={StaticResource BoolToVisibility}}">
+                    <TextBlock Text="标签" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11" Margin="2,0,0,5"/>
+                    <ItemsControl ItemsSource="{Binding TagFilters}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <ToggleButton Content="{Binding Name}" IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                              Margin="0,0,6,6" Padding="10,4" Cursor="Hand" FontSize="12"
+                                              Foreground="{DynamicResource TextPrimaryBrush}"
+                                              Background="{DynamicResource ButtonBackgroundBrush}"
+                                              BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                                    <ToggleButton.Template>
+                                        <ControlTemplate TargetType="ToggleButton">
+                                            <Border x:Name="bd" CornerRadius="4"
+                                                    Background="{TemplateBinding Background}"
+                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="bd" Property="Background" Value="{DynamicResource ButtonHoverBrush}"/>
+                                                </Trigger>
+                                                <Trigger Property="IsChecked" Value="True">
+                                                    <Setter TargetName="bd" Property="Background" Value="{DynamicResource NavActiveBrush}"/>
+                                                    <Setter TargetName="bd" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </ToggleButton.Template>
+                                </ToggleButton>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </StackPanel>
             </StackPanel>
         </Border>
@@ -202,6 +245,23 @@
                                                    Foreground="#FFFFFF" FontSize="12"/>
                                     </Border>
                                 </StackPanel>
+
+                                <ItemsControl ItemsSource="{Binding SelectedGame.Tags}" Margin="0,12,0,0">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="{DynamicResource NavActiveBrush}" CornerRadius="4"
+                                                    Padding="8,2" Margin="0,0,6,6">
+                                                <TextBlock Text="{Binding}" FontSize="11"
+                                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
 
                                 <TextBlock Text="开发商" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,16,0,4" FontSize="12"/>
                                 <TextBlock Text="{Binding SelectedGame.Developer}" Foreground="{DynamicResource TextPrimaryBrush}" TextWrapping="Wrap"/>

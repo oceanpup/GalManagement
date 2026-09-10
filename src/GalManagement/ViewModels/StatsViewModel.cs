@@ -19,9 +19,17 @@ public class DeveloperBar
     public double Ratio { get; set; }
 }
 
+public class TagBar
+{
+    public string Tag { get; set; } = string.Empty;
+    public int Count { get; set; }
+    public double Ratio { get; set; }
+}
+
 public partial class StatsViewModel : ObservableObject
 {
     private readonly GameRepository _repo;
+    private readonly TagRepository _tagRepo;
 
     [ObservableProperty]
     private int _totalCount;
@@ -43,10 +51,12 @@ public partial class StatsViewModel : ObservableObject
 
     public ObservableCollection<RatingBar> RatingDistribution { get; } = new();
     public ObservableCollection<DeveloperBar> DeveloperDistribution { get; } = new();
+    public ObservableCollection<TagBar> TagDistribution { get; } = new();
 
-    public StatsViewModel(GameRepository repo)
+    public StatsViewModel(GameRepository repo, TagRepository tagRepo)
     {
         _repo = repo;
+        _tagRepo = tagRepo;
         Refresh();
     }
 
@@ -74,7 +84,7 @@ public partial class StatsViewModel : ObservableObject
             buckets[b]++;
         }
 
-        var max = buckets.Max();
+        // 各项柱长一律 = 该项游戏数 / 游戏总数(占整个库的比例)
         RatingDistribution.Clear();
         for (var i = 1; i <= 10; i++)
         {
@@ -82,7 +92,7 @@ public partial class StatsViewModel : ObservableObject
             {
                 Score = i,
                 Count = buckets[i],
-                Ratio = max > 0 ? (double)buckets[i] / max : 0,
+                Ratio = TotalCount > 0 ? (double)buckets[i] / TotalCount : 0,
             });
         }
 
@@ -93,7 +103,6 @@ public partial class StatsViewModel : ObservableObject
             .OrderByDescending(g => g.Count)
             .ToList();
 
-        var maxDeveloper = developerCounts.Count > 0 ? developerCounts.Max(x => x.Count) : 0;
         DeveloperDistribution.Clear();
         foreach (var d in developerCounts)
         {
@@ -101,7 +110,19 @@ public partial class StatsViewModel : ObservableObject
             {
                 Developer = d.Developer,
                 Count = d.Count,
-                Ratio = maxDeveloper > 0 ? (double)d.Count / maxDeveloper : 0,
+                Ratio = TotalCount > 0 ? (double)d.Count / TotalCount : 0,
+            });
+        }
+
+        var tagCounts = _tagRepo.GetUsageCounts();
+        TagDistribution.Clear();
+        foreach (var (name, count) in tagCounts)
+        {
+            TagDistribution.Add(new TagBar
+            {
+                Tag = name,
+                Count = count,
+                Ratio = TotalCount > 0 ? (double)count / TotalCount : 0,
             });
         }
     }

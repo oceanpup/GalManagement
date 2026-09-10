@@ -104,6 +104,36 @@
                 </StackPanel>
             </Border>
 
+            <!-- 标签分布 -->
+            <Border Style="{StaticResource GlassCard}" Padding="20" Margin="0,16,0,0">
+                <StackPanel>
+                    <TextBlock Text="标签分布" Foreground="{DynamicResource TextPrimaryBrush}"
+                               FontSize="16" FontWeight="SemiBold"/>
+                    <ItemsControl ItemsSource="{Binding TagDistribution}" Margin="0,14,0,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,3,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding Tag}" Foreground="{DynamicResource TextSecondaryBrush}"
+                                               VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                    <ProgressBar Grid.Column="1" Height="14" Minimum="0" Maximum="1"
+                                                 Value="{Binding Ratio}"
+                                                 Foreground="{DynamicResource AccentBrush}"
+                                                 Background="{DynamicResource InputBackgroundBrush}"
+                                                 BorderThickness="0" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding Count}" Foreground="{DynamicResource TextSecondaryBrush}"
+                                               VerticalAlignment="Center" Margin="10,0,0,0" MinWidth="20" TextAlignment="Right"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
         </StackPanel>
     </ScrollViewer>
 </UserControl>

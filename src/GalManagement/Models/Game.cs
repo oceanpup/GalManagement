@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace GalManagement.Models;
@@ -57,4 +58,8 @@ public partial class Game : ObservableObject
     /// <summary>总体评分:有分项评价时为分项平均分,否则为手动评分(仅 UI 用,不存数据库)。</summary>
     [ObservableProperty]
     private double _effectiveRating;
+
+    /// <summary>标签(经 TagRepository 装载/保存,不存 Games 表)。</summary>
+    [ObservableProperty]
+    private ObservableCollection<string> _tags = new();
 }

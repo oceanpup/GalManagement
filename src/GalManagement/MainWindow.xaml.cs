@@ -13,15 +13,17 @@ public partial class MainWindow : Window
     private readonly MainViewModel _vm;
     private readonly GameRepository _repo;
     private readonly ReviewRepository _reviewRepo;
+    private readonly TagRepository _tagRepo;
     private readonly CoverImageService _coverService;
     private readonly GameLauncherService _launcher;
 
-    public MainWindow(MainViewModel vm, GameRepository repo, ReviewRepository reviewRepo, CoverImageService coverService, GameLauncherService launcher)
+    public MainWindow(MainViewModel vm, GameRepository repo, ReviewRepository reviewRepo, TagRepository tagRepo, CoverImageService coverService, GameLauncherService launcher)
     {
         InitializeComponent();
         _vm = vm;
         _repo = repo;
         _reviewRepo = reviewRepo;
+        _tagRepo = tagRepo;
         _coverService = coverService;
         _launcher = launcher;
         DataContext = vm;
@@ -31,7 +33,7 @@ public partial class MainWindow : Window
 
     private void OnEditRequested(Game? game)
     {
-        var editVm = new GameEditViewModel(game, _repo, _coverService, _launcher);
+        var editVm = new GameEditViewModel(game, _repo, _tagRepo, _coverService, _launcher);
         var dialog = new GameEditDialog(editVm) { Owner = this };
 
         if (dialog.ShowDialog() == true)

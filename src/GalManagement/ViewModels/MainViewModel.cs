@@ -43,6 +43,7 @@ public partial class MainViewModel : ObservableObject
 
     public MainViewModel(
         GameRepository repo,
+        TagRepository tagRepo,
         CoverImageService coverService,
         BackgroundService bgService,
         ThemeService themeService,
@@ -56,8 +57,8 @@ public partial class MainViewModel : ObservableObject
         _settingsService = settingsService;
         _iconService = iconService;
 
-        Library = new GameLibraryViewModel(repo, coverService, launcher);
-        Stats = new StatsViewModel(repo);
+        Library = new GameLibraryViewModel(repo, tagRepo, coverService, launcher);
+        Stats = new StatsViewModel(repo, tagRepo);
         Settings = new SettingsViewModel(settingsService.Current, settingsService, iconService, updateService);
 
         _currentView = Library;

@@ -22,11 +22,32 @@ public record SortOption(string Display, string SortBy, bool Ascending)
     public override string ToString() => Display;
 }
 
+/// <summary>标签筛选芯片:勾选变化时回调(用于重建筛选)。</summary>
+public partial class TagFilterItem : ObservableObject
+{
+    private readonly Action _onChanged;
+
+    public string Name { get; }
+
+    [ObservableProperty]
+    private bool _isSelected;
+
+    public TagFilterItem(string name, Action onChanged)
+    {
+        Name = name;
+        _onChanged = onChanged;
+    }
+
+    partial void OnIsSelectedChanged(bool value) => _onChanged();
+}
+
 public partial class GameLibraryViewModel : ObservableObject
 {
     private readonly GameRepository _repo;
+    private readonly TagRepository _tagRepo;
     private readonly CoverImageService _coverService;
     private readonly GameLauncherService _launcher;
+    private bool _suppressTagReload;
 
     public ObservableCollection<Game> Games { get; } = new();
 
@@ -70,6 +91,8 @@ public partial class GameLibraryViewModel : ObservableObject
     [ObservableProperty]
     private bool _isFilterOpen;
 
+    public ObservableCollection<TagFilterItem> TagFilters { get; } = new();
+
     public RelayCommand AddCommand { get; }
     public RelayCommand EditCommand { get; }
     public RelayCommand DeleteCommand { get; }
@@ -79,9 +102,10 @@ public partial class GameLibraryViewModel : ObservableObject
     public event Action<Game?>? EditRequested;
     public event Action<Game>? DetailRequested;
 
-    public GameLibraryViewModel(GameRepository repo, CoverImageService coverService, GameLauncherService launcher)
+    public GameLibraryViewModel(GameRepository repo, TagRepository tagRepo, CoverImageService coverService, GameLauncherService launcher)
     {
         _repo = repo;
+        _tagRepo = tagRepo;
         _coverService = coverService;
         _launcher = launcher;
         _selectedStatus = StatusFilterOptions[0];
@@ -117,22 +141,56 @@ public partial class GameLibraryViewModel : ObservableObject
     {
         var filter = new GameFilter
         {
-            NameKeyword = SearchText,
+            Keyword = SearchText,
             Status = SelectedStatus.Value,
             Developer = SelectedDeveloper.Value,
+            Tags = TagFilters.Where(t => t.IsSelected).Select(t => t.Name).ToList(),
             SortBy = SelectedSort.SortBy,
             Ascending = SelectedSort.Ascending,
         };
 
         var list = _repo.Search(filter);
+        var tagMap = _tagRepo.GetForGames(list.Select(g => g.Id));
+
         Games.Clear();
         foreach (var g in list)
         {
             g.CoverFullPath = _coverService.GetFullPath(g.CoverPath);
+            if (tagMap.TryGetValue(g.Id, out var tags))
+            {
+                foreach (var t in tags)
+                    g.Tags.Add(t);
+            }
             Games.Add(g);
         }
 
+        RefreshTagFilters();
         RefreshDevelopers();
+    }
+
+    private void OnTagFilterChanged()
+    {
+        if (!_suppressTagReload)
+            Reload();
+    }
+
+    private void RefreshTagFilters()
+    {
+        _suppressTagReload = true;
+        try
+        {
+            var selected = TagFilters.Where(t => t.IsSelected)
+                .Select(t => t.Name)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            TagFilters.Clear();
+            foreach (var name in _tagRepo.GetAllOrdered())
+                TagFilters.Add(new TagFilterItem(name, OnTagFilterChanged) { IsSelected = selected.Contains(name) });
+        }
+        finally
+        {
+            _suppressTagReload = false;
+        }
     }
 
     private void LaunchGame(Game? game)
@@ -163,6 +221,7 @@ public partial class GameLibraryViewModel : ObservableObject
             return;
 
         _coverService.Delete(SelectedGame.CoverPath);
+        _tagRepo.DeleteForGame(SelectedGame.Id);
         _repo.Delete(SelectedGame.Id);
         SelectedGame = null;
         Reload();
