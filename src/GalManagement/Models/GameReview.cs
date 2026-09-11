@@ -35,6 +35,14 @@ public partial class GameReview : ObservableObject
     [ObservableProperty]
     private double _thumbOffsetY = 0.5;
 
+    /// <summary>手动排序用的顺序号(越小越靠前)。</summary>
+    [ObservableProperty]
+    private int _sortOrder;
+
+    /// <summary>正在被拖动(仅 UI 用,不存数据库)。</summary>
+    [ObservableProperty]
+    private bool _isDragging;
+
     [ObservableProperty]
     private DateTime _createdAt;
 

@@ -49,6 +49,7 @@ public partial class MainViewModel : ObservableObject
         ThemeService themeService,
         SettingsService settingsService,
         GameLauncherService launcher,
+        PlayTimeTracker tracker,
         IconService iconService,
         UpdateService updateService)
     {
@@ -57,7 +58,7 @@ public partial class MainViewModel : ObservableObject
         _settingsService = settingsService;
         _iconService = iconService;
 
-        Library = new GameLibraryViewModel(repo, tagRepo, coverService, launcher);
+        Library = new GameLibraryViewModel(repo, tagRepo, coverService, tracker);
         Stats = new StatsViewModel(repo, tagRepo);
         Settings = new SettingsViewModel(settingsService.Current, settingsService, iconService, updateService);
 

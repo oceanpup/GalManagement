@@ -46,7 +46,7 @@ public partial class GameLibraryViewModel : ObservableObject
     private readonly GameRepository _repo;
     private readonly TagRepository _tagRepo;
     private readonly CoverImageService _coverService;
-    private readonly GameLauncherService _launcher;
+    private readonly PlayTimeTracker _tracker;
     private bool _suppressTagReload;
 
     public ObservableCollection<Game> Games { get; } = new();
@@ -102,12 +102,14 @@ public partial class GameLibraryViewModel : ObservableObject
     public event Action<Game?>? EditRequested;
     public event Action<Game>? DetailRequested;
 
-    public GameLibraryViewModel(GameRepository repo, TagRepository tagRepo, CoverImageService coverService, GameLauncherService launcher)
+    public GameLibraryViewModel(GameRepository repo, TagRepository tagRepo, CoverImageService coverService, PlayTimeTracker tracker)
     {
         _repo = repo;
         _tagRepo = tagRepo;
         _coverService = coverService;
-        _launcher = launcher;
+        _tracker = tracker;
+        _tracker.Tick += ApplyLiveState;
+        _tracker.SessionEnded += OnSessionEnded;
         _selectedStatus = StatusFilterOptions[0];
         _selectedDeveloper = new DeveloperOption("全部开发商", null);
         _selectedSort = SortOptions[0];
@@ -166,6 +168,7 @@ public partial class GameLibraryViewModel : ObservableObject
 
         RefreshTagFilters();
         RefreshDevelopers();
+        ApplyLiveState();
     }
 
     private void OnTagFilterChanged()
@@ -198,12 +201,42 @@ public partial class GameLibraryViewModel : ObservableObject
         if (game is null)
             return;
 
-        var error = _launcher.Launch(game.LaunchPath);
-        if (error is not null)
+        var message = _tracker.Start(game);
+        ApplyLiveState();
+
+        if (message is not null)
         {
-            System.Windows.MessageBox.Show(error, "无法启动",
+            System.Windows.MessageBox.Show(message, "启动",
                 System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
         }
+    }
+
+    /// <summary>把计时中的游戏的实时时长写回列表对象(界面因此会随时间增长)。</summary>
+    private void ApplyLiveState()
+    {
+        foreach (var game in Games)
+        {
+            var total = _tracker.CurrentTotal(game.Id);
+            if (total is null)
+                continue;
+
+            game.IsRunning = true;
+            game.PlayTimeHours = Math.Round(total.Value, 2);
+
+            var elapsed = _tracker.Elapsed(game.Id);
+            game.SessionElapsedText = $"本次已运行 {(int)elapsed.TotalHours}:{elapsed.Minutes:00}:{elapsed.Seconds:00}";
+        }
+    }
+
+    private void OnSessionEnded(int gameId, double total)
+    {
+        var game = Games.FirstOrDefault(g => g.Id == gameId);
+        if (game is null)
+            return;
+
+        game.PlayTimeHours = total;
+        game.IsRunning = false;
+        game.SessionElapsedText = string.Empty;
     }
 
     private void Delete()
@@ -220,6 +253,7 @@ public partial class GameLibraryViewModel : ObservableObject
         if (result != System.Windows.MessageBoxResult.Yes)
             return;
 
+        _tracker.Stop(SelectedGame.Id);
         _coverService.Delete(SelectedGame.CoverPath);
         _tagRepo.DeleteForGame(SelectedGame.Id);
         _repo.Delete(SelectedGame.Id);

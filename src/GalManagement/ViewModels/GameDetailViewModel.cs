@@ -55,6 +55,20 @@ public partial class GameDetailViewModel : ObservableObject
         OverallRating = HasReviews ? Reviews.Average(r => r.Rating) : Game.Rating;
     }
 
+    /// <summary>拖动中实时调整内存顺序(不落库)。</summary>
+    public void MoveReview(int from, int to)
+    {
+        if (from < 0 || from >= Reviews.Count)
+            return;
+
+        to = Math.Clamp(to, 0, Reviews.Count - 1);
+        if (from != to)
+            Reviews.Move(from, to);
+    }
+
+    /// <summary>松手后把当前顺序落库。</summary>
+    public void PersistOrder() => _reviewRepo.Reorder(Reviews.Select(r => r.Id).ToList());
+
     private void DeleteReview(GameReview? review)
     {
         if (review is null)

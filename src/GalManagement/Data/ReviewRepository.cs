@@ -6,7 +6,7 @@ namespace GalManagement.Data;
 /// <summary>游戏分项评价的数据访问(手写参数化 SQL)。</summary>
 public class ReviewRepository
 {
-    private const string Columns = "Id, GameId, Title, Rating, Comment, CoverPath, ThumbOffsetX, ThumbOffsetY, CreatedAt, UpdatedAt";
+    private const string Columns = "Id, GameId, Title, Rating, Comment, CoverPath, ThumbOffsetX, ThumbOffsetY, SortOrder, CreatedAt, UpdatedAt";
 
     private readonly Database _db;
 
@@ -16,7 +16,7 @@ public class ReviewRepository
     {
         using var conn = _db.CreateConnection();
         using var cmd = conn.CreateCommand();
-        cmd.CommandText = $"SELECT {Columns} FROM GameReviews WHERE GameId = @gameId ORDER BY Id";
+        cmd.CommandText = $"SELECT {Columns} FROM GameReviews WHERE GameId = @gameId ORDER BY SortOrder, Id";
         cmd.Parameters.AddWithValue("@gameId", gameId);
 
         var list = new List<GameReview>();
@@ -34,8 +34,10 @@ public class ReviewRepository
         using var conn = _db.CreateConnection();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = """
-            INSERT INTO GameReviews (GameId, Title, Rating, Comment, CoverPath, ThumbOffsetX, ThumbOffsetY, CreatedAt, UpdatedAt)
-            VALUES (@gameId, @title, @rating, @comment, @cover, @thumbX, @thumbY, @created, @updated);
+            INSERT INTO GameReviews (GameId, Title, Rating, Comment, CoverPath, ThumbOffsetX, ThumbOffsetY, SortOrder, CreatedAt, UpdatedAt)
+            VALUES (@gameId, @title, @rating, @comment, @cover, @thumbX, @thumbY,
+                    (SELECT COALESCE(MAX(SortOrder), 0) + 1 FROM GameReviews WHERE GameId = @gameId),
+                    @created, @updated);
             SELECT last_insert_rowid();
             """;
         AddParams(cmd, review);
@@ -69,6 +71,27 @@ public class ReviewRepository
         cmd.ExecuteNonQuery();
     }
 
+    /// <summary>按给定顺序重排分项评价(下标即新顺序)。</summary>
+    public void Reorder(IReadOnlyList<int> orderedIds)
+    {
+        using var conn = _db.CreateConnection();
+        using var tx = conn.BeginTransaction();
+        using var cmd = conn.CreateCommand();
+        cmd.Transaction = tx;
+        cmd.CommandText = "UPDATE GameReviews SET SortOrder = @order WHERE Id = @id";
+        var order = cmd.Parameters.Add("@order", SqliteType.Integer);
+        var id = cmd.Parameters.Add("@id", SqliteType.Integer);
+
+        for (var i = 0; i < orderedIds.Count; i++)
+        {
+            order.Value = i + 1;
+            id.Value = orderedIds[i];
+            cmd.ExecuteNonQuery();
+        }
+
+        tx.Commit();
+    }
+
     private static void AddParams(SqliteCommand cmd, GameReview review)
     {
         cmd.Parameters.AddWithValue("@gameId", review.GameId);
@@ -92,7 +115,8 @@ public class ReviewRepository
         CoverPath = r.IsDBNull(5) ? null : r.GetString(5),
         ThumbOffsetX = r.IsDBNull(6) ? 0.5 : r.GetDouble(6),
         ThumbOffsetY = r.IsDBNull(7) ? 0.5 : r.GetDouble(7),
-        CreatedAt = DateTime.Parse(r.GetString(8)),
-        UpdatedAt = DateTime.Parse(r.GetString(9)),
+        SortOrder = r.GetInt32(8),
+        CreatedAt = DateTime.Parse(r.GetString(9)),
+        UpdatedAt = DateTime.Parse(r.GetString(10)),
     };
 }

@@ -100,12 +100,24 @@ public class Database
                 CoverPath    TEXT,
                 ThumbOffsetX REAL    NOT NULL DEFAULT 0.5,
                 ThumbOffsetY REAL    NOT NULL DEFAULT 0.5,
+                SortOrder    INTEGER NOT NULL DEFAULT 0,
                 CreatedAt    TEXT    NOT NULL,
                 UpdatedAt    TEXT    NOT NULL
             );
             CREATE INDEX IF NOT EXISTS IX_GameReviews_GameId ON GameReviews (GameId);
             """;
         reviewCmd.ExecuteNonQuery();
+
+        // 迁移:为旧数据库补充评价排序号,旧数据按原创建顺序(NOT NULL 的新列先全为 0,再按 Id 回填)
+        if (!ColumnExists(conn, "GameReviews", "SortOrder"))
+        {
+            using var alterOrder = conn.CreateCommand();
+            alterOrder.CommandText = """
+                ALTER TABLE GameReviews ADD COLUMN SortOrder INTEGER NOT NULL DEFAULT 0;
+                UPDATE GameReviews SET SortOrder = Id;
+                """;
+            alterOrder.ExecuteNonQuery();
+        }
 
         // 迁移:为旧数据库补充评价封面列
         if (!ColumnExists(conn, "GameReviews", "CoverPath"))

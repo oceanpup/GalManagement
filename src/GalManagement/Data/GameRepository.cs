@@ -119,6 +119,18 @@ public class GameRepository
         cmd.ExecuteNonQuery();
     }
 
+    /// <summary>只更新游玩时长与更新时间(时长监测落库用,避免整行覆盖)。</summary>
+    public void UpdatePlayTimeHours(int id, double hours)
+    {
+        using var conn = _db.CreateConnection();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "UPDATE Games SET PlayTimeHours = @hours, UpdatedAt = @updated WHERE Id = @id";
+        cmd.Parameters.AddWithValue("@hours", hours);
+        cmd.Parameters.AddWithValue("@updated", DateTime.Now.ToString("O"));
+        cmd.Parameters.AddWithValue("@id", id);
+        cmd.ExecuteNonQuery();
+    }
+
     public void Delete(int id)
     {
         using var conn = _db.CreateConnection();

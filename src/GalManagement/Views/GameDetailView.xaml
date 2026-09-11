@@ -73,9 +73,12 @@
                            Foreground="{DynamicResource TextSecondaryBrush}" FontSize="14"
                            Visibility="{Binding HasReviews, Converter={StaticResource InverseBoolToVisibility}}"/>
 
-                <ListBox Grid.Row="1" ItemsSource="{Binding Reviews}"
+                <ListBox Grid.Row="1" x:Name="ReviewList" ItemsSource="{Binding Reviews}"
                          Background="Transparent" BorderThickness="0"
                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         AllowDrop="True"
+                         DragOver="ReviewList_DragOver"
+                         Drop="ReviewList_Drop"
                          Visibility="{Binding HasReviews, Converter={StaticResource BoolToVisibility}}">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="ListBoxItem">
@@ -96,6 +99,9 @@
                                             <Trigger Property="IsSelected" Value="True">
                                                 <Setter TargetName="bd" Property="Background" Value="{DynamicResource NavActiveBrush}"/>
                                             </Trigger>
+                                            <DataTrigger Binding="{Binding IsDragging}" Value="True">
+                                                <Setter TargetName="bd" Property="Opacity" Value="0.45"/>
+                                            </DataTrigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
                                 </Setter.Value>
@@ -109,11 +115,33 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
 
-                                <Border Grid.Column="0" Width="44" Height="60"
+                                <Border Grid.Column="0" Width="30" Margin="2,0,10,0"
+                                        VerticalAlignment="Stretch" Cursor="SizeAll"
+                                        ToolTip="按住拖动可调整顺序"
+                                        PreviewMouseLeftButtonDown="Handle_PreviewMouseLeftButtonDown"
+                                        PreviewMouseMove="Handle_PreviewMouseMove">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="Transparent"/>
+                                            <Setter Property="CornerRadius" Value="4"/>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="{DynamicResource ButtonHoverBrush}"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <TextBlock Text="⠿" FontSize="16"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                </Border>
+
+                                <Border Grid.Column="1" Width="44" Height="60"
                                         Background="{DynamicResource InputBackgroundBrush}" CornerRadius="6">
                                     <Image Stretch="UniformToFill">
                                         <Image.Source>
@@ -126,13 +154,13 @@
                                     </Image>
                                 </Border>
 
-                                <Border Grid.Column="1" Background="{Binding Rating, Converter={StaticResource RatingToBrush}}"
+                                <Border Grid.Column="2" Background="{Binding Rating, Converter={StaticResource RatingToBrush}}"
                                         CornerRadius="4" Padding="6,2" VerticalAlignment="Top" Margin="10,0,0,0">
                                     <TextBlock Text="{Binding Rating, StringFormat={}{0:F1}}"
                                                Foreground="#FFFFFF" FontSize="12" FontWeight="SemiBold"/>
                                 </Border>
 
-                                <StackPanel Grid.Column="2" Margin="10,0,0,0">
+                                <StackPanel Grid.Column="3" Margin="10,0,0,0">
                                     <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="SemiBold"
                                                Foreground="{DynamicResource TextPrimaryBrush}" TextWrapping="Wrap"/>
                                     <TextBlock Text="{Binding Comment}" FontSize="12" Margin="0,4,0,0"
@@ -140,7 +168,7 @@
                                                Visibility="{Binding Comment, Converter={StaticResource NullToVisibility}}"/>
                                 </StackPanel>
 
-                                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Top" Margin="12,0,0,0">
+                                <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Top" Margin="12,0,0,0">
                                     <Button Style="{StaticResource GlassButton}" Content="编辑"
                                             MinWidth="56" MinHeight="30" Padding="0" FontSize="12"
                                             Background="{DynamicResource AccentGlassBrush}"

@@ -186,6 +186,12 @@
                                             <TextBlock Text="{Binding Status, Converter={StaticResource StatusToText}}"
                                                        Foreground="#FFFFFF" FontSize="11"/>
                                         </Border>
+                                        <Border Background="{DynamicResource AccentGlassBrush}"
+                                                BorderBrush="{DynamicResource AccentBrush}" BorderThickness="1"
+                                                CornerRadius="4" Padding="6,1" Margin="6,0,0,0"
+                                                Visibility="{Binding IsRunning, Converter={StaticResource BoolToVisibility}}">
+                                            <TextBlock Text="运行中" Foreground="{DynamicResource TextPrimaryBrush}" FontSize="11"/>
+                                        </Border>
                                     </StackPanel>
                                 </StackPanel>
 
@@ -193,6 +199,7 @@
                                         VerticalAlignment="Center" Margin="10,0,0,0"
                                         MinWidth="56" MinHeight="34" Padding="0" FontSize="13"
                                         Background="{DynamicResource AccentGlassBrush}"
+                                        IsEnabled="{Binding IsRunning, Converter={StaticResource InverseBool}}"
                                         Command="{Binding DataContext.LaunchCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
                                         CommandParameter="{Binding}"/>
                             </Grid>
@@ -273,6 +280,9 @@
                                 <TextBlock Text="游玩时长" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,12,0,4" FontSize="12"/>
                                 <TextBlock Text="{Binding SelectedGame.PlayTimeHours, StringFormat={}{0:F1} 小时}"
                                            Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                <TextBlock Text="{Binding SelectedGame.SessionElapsedText}" Margin="0,4,0,0" FontSize="12"
+                                           Foreground="{DynamicResource AccentBrush}"
+                                           Visibility="{Binding SelectedGame.IsRunning, Converter={StaticResource BoolToVisibility}}"/>
 
                                 <TextBlock Text="概述" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,12,0,4" FontSize="12"/>
                                 <TextBlock Text="{Binding SelectedGame.Summary}" Foreground="{DynamicResource TextPrimaryBrush}" TextWrapping="Wrap"/>
@@ -285,6 +295,7 @@
                         <Button Style="{StaticResource GlassButton}" Content="启动" Margin="0,0,12,0"
                                 MinWidth="72" MinHeight="35" Padding="0" FontSize="12"
                                 Background="{DynamicResource AccentGlassBrush}"
+                                IsEnabled="{Binding SelectedGame.IsRunning, Converter={StaticResource InverseBool}}"
                                 Command="{Binding LaunchCommand}"
                                 CommandParameter="{Binding SelectedGame}"/>
                         <Button Style="{StaticResource GlassButton}" Content="删除"

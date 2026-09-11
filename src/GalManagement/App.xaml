@@ -17,6 +17,7 @@
             <conv:ThumbnailCropConverter x:Key="ThumbnailCrop"/>
             <BooleanToVisibilityConverter x:Key="BoolToVisibility"/>
             <conv:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVisibility"/>
+            <conv:InverseBooleanConverter x:Key="InverseBool"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

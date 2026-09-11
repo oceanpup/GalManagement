@@ -14,6 +14,7 @@ public partial class GameEditViewModel : ObservableObject
     private readonly TagRepository _tagRepo;
     private readonly CoverImageService _coverService;
     private readonly GameLauncherService _launcher;
+    private readonly PlayTimeTracker _tracker;
     private readonly string? _originalCoverPath;
     private readonly List<string> _allTags;
 
@@ -46,12 +47,13 @@ public partial class GameEditViewModel : ObservableObject
     public event Action<bool>? RequestClose;
 
     public GameEditViewModel(Game? game, GameRepository repo, TagRepository tagRepo,
-        CoverImageService coverService, GameLauncherService launcher)
+        CoverImageService coverService, GameLauncherService launcher, PlayTimeTracker tracker)
     {
         _repo = repo;
         _tagRepo = tagRepo;
         _coverService = coverService;
         _launcher = launcher;
+        _tracker = tracker;
         Current = CloneOrNew(game);
         _originalCoverPath = Current.CoverPath;
         _coverPreviewPath = coverService.GetFullPath(Current.CoverPath);
@@ -132,6 +134,9 @@ public partial class GameEditViewModel : ObservableObject
             _repo.Update(Current);
 
         _tagRepo.SetForGame(Current.Id, Current.Tags);
+
+        // 中途改了时长:以新值为基值,计时从此刻继续累加
+        _tracker.Rebase(Current.Id, Current.PlayTimeHours ?? 0);
 
         RequestClose?.Invoke(true);
     }

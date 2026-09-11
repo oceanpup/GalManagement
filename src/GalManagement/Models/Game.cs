@@ -62,4 +62,12 @@ public partial class Game : ObservableObject
     /// <summary>标签(经 TagRepository 装载/保存,不存 Games 表)。</summary>
     [ObservableProperty]
     private ObservableCollection<string> _tags = new();
+
+    /// <summary>是否正在计时中(仅 UI 用,不存数据库)。</summary>
+    [ObservableProperty]
+    private bool _isRunning;
+
+    /// <summary>本次运行的已用时长文本,如 "1:23:45"(仅 UI 用,不存数据库)。</summary>
+    [ObservableProperty]
+    private string _sessionElapsedText = string.Empty;
 }

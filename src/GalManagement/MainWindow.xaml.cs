@@ -16,8 +16,9 @@ public partial class MainWindow : Window
     private readonly TagRepository _tagRepo;
     private readonly CoverImageService _coverService;
     private readonly GameLauncherService _launcher;
+    private readonly PlayTimeTracker _tracker;
 
-    public MainWindow(MainViewModel vm, GameRepository repo, ReviewRepository reviewRepo, TagRepository tagRepo, CoverImageService coverService, GameLauncherService launcher)
+    public MainWindow(MainViewModel vm, GameRepository repo, ReviewRepository reviewRepo, TagRepository tagRepo, CoverImageService coverService, GameLauncherService launcher, PlayTimeTracker tracker)
     {
         InitializeComponent();
         _vm = vm;
@@ -26,6 +27,7 @@ public partial class MainWindow : Window
         _tagRepo = tagRepo;
         _coverService = coverService;
         _launcher = launcher;
+        _tracker = tracker;
         DataContext = vm;
         vm.Library.EditRequested += OnEditRequested;
         vm.Library.DetailRequested += OnDetailRequested;
@@ -33,7 +35,7 @@ public partial class MainWindow : Window
 
     private void OnEditRequested(Game? game)
     {
-        var editVm = new GameEditViewModel(game, _repo, _tagRepo, _coverService, _launcher);
+        var editVm = new GameEditViewModel(game, _repo, _tagRepo, _coverService, _launcher, _tracker);
         var dialog = new GameEditDialog(editVm) { Owner = this };
 
         if (dialog.ShowDialog() == true)
