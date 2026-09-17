@@ -47,6 +47,7 @@ public partial class GameLibraryViewModel : ObservableObject
     private readonly TagRepository _tagRepo;
     private readonly CoverImageService _coverService;
     private readonly PlayTimeTracker _tracker;
+    private readonly CloudSaveService _cloudSave;
     private bool _suppressTagReload;
 
     public ObservableCollection<Game> Games { get; } = new();
@@ -97,17 +98,23 @@ public partial class GameLibraryViewModel : ObservableObject
     public RelayCommand EditCommand { get; }
     public RelayCommand DeleteCommand { get; }
     public RelayCommand ToggleFilterCommand { get; }
-    public RelayCommand<Game> LaunchCommand { get; }
+    public IAsyncRelayCommand<Game> LaunchCommand { get; }
+    public IAsyncRelayCommand<Game> SaveSyncCommand { get; }
 
     public event Action<Game?>? EditRequested;
     public event Action<Game>? DetailRequested;
 
-    public GameLibraryViewModel(GameRepository repo, TagRepository tagRepo, CoverImageService coverService, PlayTimeTracker tracker)
+    /// <summary>需要弹出云存档同步窗口;由 MainWindow 接住并 ShowDialog(会阻塞到用户选完)。</summary>
+    public event Action<Game, SaveSyncScenario, SaveCompare>? SaveSyncRequested;
+
+    public GameLibraryViewModel(GameRepository repo, TagRepository tagRepo, CoverImageService coverService,
+        PlayTimeTracker tracker, CloudSaveService cloudSave)
     {
         _repo = repo;
         _tagRepo = tagRepo;
         _coverService = coverService;
         _tracker = tracker;
+        _cloudSave = cloudSave;
         _tracker.Tick += ApplyLiveState;
         _tracker.SessionEnded += OnSessionEnded;
         _selectedStatus = StatusFilterOptions[0];
@@ -118,7 +125,8 @@ public partial class GameLibraryViewModel : ObservableObject
         EditCommand = new RelayCommand(() => EditRequested?.Invoke(SelectedGame), () => SelectedGame is not null);
         DeleteCommand = new RelayCommand(Delete, () => SelectedGame is not null);
         ToggleFilterCommand = new RelayCommand(() => IsFilterOpen = !IsFilterOpen);
-        LaunchCommand = new RelayCommand<Game>(LaunchGame);
+        LaunchCommand = new AsyncRelayCommand<Game>(LaunchGameAsync);
+        SaveSyncCommand = new AsyncRelayCommand<Game>(SaveSyncAsync, CanSaveSync);
 
         Reload();
     }
@@ -196,10 +204,12 @@ public partial class GameLibraryViewModel : ObservableObject
         }
     }
 
-    private void LaunchGame(Game? game)
+    private async Task LaunchGameAsync(Game? game)
     {
         if (game is null)
             return;
+
+        await SyncBeforeLaunchAsync(game);
 
         var message = _tracker.Start(game);
         ApplyLiveState();
@@ -208,6 +218,104 @@ public partial class GameLibraryViewModel : ObservableObject
         {
             System.Windows.MessageBox.Show(message, "启动",
                 System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+        }
+    }
+
+    /// <summary>云存档前置条件:已绑定 + 该游戏设了存档目录 + 档位没关。</summary>
+    private bool CloudEnabledFor(Game game, SaveSyncMode mode) =>
+        mode != SaveSyncMode.Off && _cloudSave.IsBound && !string.IsNullOrWhiteSpace(game.SavePath);
+
+    /// <summary>
+    /// 启动前的同步。任何云端异常都只提示一句,绝不拦住启动——
+    /// 云盘挂了也得让人玩得上游戏。
+    /// </summary>
+    private async Task SyncBeforeLaunchAsync(Game game)
+    {
+        var mode = _cloudSave.BeforeLaunchMode;
+        if (!CloudEnabledFor(game, mode))
+            return;
+
+        try
+        {
+            var compare = await _cloudSave.CompareAsync(game);
+
+            if (mode == SaveSyncMode.Auto)
+            {
+                // 启动前只关心「云端更新了得先拉下来」,本地更新的那份交给游玩后上传
+                if (compare.State == SaveSyncState.RemoteNewer)
+                    await _cloudSave.DownloadAsync(game);
+                return;
+            }
+
+            // 只有真的存在新旧差异才打扰用户
+            if (compare.State is not (SaveSyncState.LocalNewer or SaveSyncState.RemoteNewer or SaveSyncState.LocalMissing))
+                return;
+
+            SaveSyncRequested?.Invoke(game, SaveSyncScenario.BeforeLaunch, compare);
+        }
+        catch (Exception ex)
+        {
+            System.Windows.MessageBox.Show(
+                $"云存档同步失败,已直接启动游戏。\n{ex.Message}",
+                "云存档", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+        }
+    }
+
+    private bool CanSaveSync(Game? game) =>
+        game is not null && _cloudSave.IsBound && !string.IsNullOrWhiteSpace(game.SavePath);
+
+    /// <summary>列表上手动触发的同步。</summary>
+    private async Task SaveSyncAsync(Game? game)
+    {
+        if (game is null || !CanSaveSync(game))
+            return;
+
+        game.IsSaveSyncing = true;
+        try
+        {
+            var compare = await _cloudSave.CompareAsync(game);
+            SaveSyncRequested?.Invoke(game, SaveSyncScenario.Manual, compare);
+        }
+        catch (Exception ex)
+        {
+            System.Windows.MessageBox.Show(
+                $"无法比对云存档:{ex.Message}",
+                "云存档", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+        }
+        finally
+        {
+            game.IsSaveSyncing = false;
+        }
+    }
+
+    /// <summary>游戏退出后的同步。计时器回调里发起,异常必须全部兜住,不能冒到计时器调用栈上。</summary>
+    private async Task RunAfterPlaySyncAsync(Game game)
+    {
+        var mode = _cloudSave.AfterPlayMode;
+        if (!CloudEnabledFor(game, mode))
+            return;
+
+        try
+        {
+            var compare = await _cloudSave.CompareAsync(game);
+            if (compare.Local.FileCount == 0)   // 没存档可传,不必打扰
+                return;
+
+            if (mode == SaveSyncMode.Auto)
+            {
+                await _cloudSave.UploadAsync(game, new Progress<string>(s => game.SaveSyncText = s));
+                game.SaveSyncText = string.Empty;
+                return;
+            }
+
+            SaveSyncRequested?.Invoke(game, SaveSyncScenario.AfterPlay, compare);
+        }
+        catch (Exception ex)
+        {
+            game.SaveSyncText = string.Empty;
+            System.Windows.MessageBox.Show(
+                $"云存档上传失败:{ex.Message}\n本次存档仍完整保存在本地。",
+                "云存档", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
         }
     }
 
@@ -237,6 +345,8 @@ public partial class GameLibraryViewModel : ObservableObject
         game.PlayTimeHours = total;
         game.IsRunning = false;
         game.SessionElapsedText = string.Empty;
+
+        _ = RunAfterPlaySyncAsync(game);
     }
 
     private void Delete()

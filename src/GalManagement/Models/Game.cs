@@ -25,6 +25,17 @@ public partial class Game : ObservableObject
     [ObservableProperty]
     private string? _launchPath;
 
+    /// <summary>存档目录(本地目录,云存档同步的本地端;留空则不参与同步)。</summary>
+    [ObservableProperty]
+    private string? _savePath;
+
+    /// <summary>
+    /// 云端目录名。首次保存时钉死,之后改名不再改变它,否则云端会另开一个目录、
+    /// 旧存档就被甩掉了。留空则回落到当前游戏名。
+    /// </summary>
+    [ObservableProperty]
+    private string? _cloudDir;
+
     [ObservableProperty]
     private GameStatus _status;
 
@@ -70,4 +81,12 @@ public partial class Game : ObservableObject
     /// <summary>本次运行的已用时长文本,如 "1:23:45"(仅 UI 用,不存数据库)。</summary>
     [ObservableProperty]
     private string _sessionElapsedText = string.Empty;
+
+    /// <summary>云存档状态文本,如 "上传中 3/12"(仅 UI 用,不存数据库)。</summary>
+    [ObservableProperty]
+    private string _saveSyncText = string.Empty;
+
+    /// <summary>云存档同步进行中(仅 UI 用,不存数据库)。</summary>
+    [ObservableProperty]
+    private bool _isSaveSyncing;
 }

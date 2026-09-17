@@ -17,8 +17,9 @@ public partial class MainWindow : Window
     private readonly CoverImageService _coverService;
     private readonly GameLauncherService _launcher;
     private readonly PlayTimeTracker _tracker;
+    private readonly CloudSaveService _cloudSave;
 
-    public MainWindow(MainViewModel vm, GameRepository repo, ReviewRepository reviewRepo, TagRepository tagRepo, CoverImageService coverService, GameLauncherService launcher, PlayTimeTracker tracker)
+    public MainWindow(MainViewModel vm, GameRepository repo, ReviewRepository reviewRepo, TagRepository tagRepo, CoverImageService coverService, GameLauncherService launcher, PlayTimeTracker tracker, CloudSaveService cloudSave)
     {
         InitializeComponent();
         _vm = vm;
@@ -28,14 +29,35 @@ public partial class MainWindow : Window
         _coverService = coverService;
         _launcher = launcher;
         _tracker = tracker;
+        _cloudSave = cloudSave;
         DataContext = vm;
         vm.Library.EditRequested += OnEditRequested;
         vm.Library.DetailRequested += OnDetailRequested;
+        vm.Library.SaveSyncRequested += OnSaveSyncRequested;
+        vm.Cloud.BindAccountRequested += OnBindAccountRequested;
+    }
+
+    private void OnBindAccountRequested()
+    {
+        var dialog = new BaiduAccountDialog(new BaiduAccountViewModel(_cloudSave)) { Owner = this };
+        if (dialog.ShowDialog() != true)
+            return;
+
+        _vm.Cloud.RefreshCloudAccount();
+        _vm.Cloud.RefreshOnEnter();      // 刚绑上就把云端列表拉出来
+    }
+
+    // 模态阻塞到用户选完,所以「启动前同步」天然挡住启动流程,不用额外同步原语
+    private void OnSaveSyncRequested(Game game, SaveSyncScenario scenario, SaveCompare compare)
+    {
+        var dialog = new SaveSyncDialog(new SaveSyncViewModel(_cloudSave, game, scenario, compare)) { Owner = this };
+        dialog.ShowDialog();
     }
 
     private void OnEditRequested(Game? game)
     {
-        var editVm = new GameEditViewModel(game, _repo, _tagRepo, _coverService, _launcher, _tracker);
+        var editVm = new GameEditViewModel(
+            game, _repo, _tagRepo, _coverService, _launcher, _tracker, _cloudSave);
         var dialog = new GameEditDialog(editVm) { Owner = this };
 
         if (dialog.ShowDialog() == true)

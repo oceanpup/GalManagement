@@ -25,12 +25,13 @@ public partial class App : Application
         var tracker = new PlayTimeTracker(repo, launcher);
         var iconService = new IconService(db.IconsDirectory);
         var updater = new UpdateService(db.DataDirectory);
+        var cloudSave = new CloudSaveService(settings, db.DataDirectory);
         themeService.Apply(settings.Current.Theme);
         updater.InitCleanup();
         _tracker = tracker;
 
-        var mainVm = new MainViewModel(repo, tagRepo, coverService, bgService, themeService, settings, launcher, tracker, iconService, updater);
-        var window = new MainWindow(mainVm, repo, reviewRepo, tagRepo, coverService, launcher, tracker);
+        var mainVm = new MainViewModel(repo, tagRepo, coverService, bgService, themeService, settings, launcher, tracker, iconService, updater, cloudSave);
+        var window = new MainWindow(mainVm, repo, reviewRepo, tagRepo, coverService, launcher, tracker, cloudSave);
 
         MainWindow = window;
         window.Show();

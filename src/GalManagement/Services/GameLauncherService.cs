@@ -22,6 +22,17 @@ public class GameLauncherService
         return dialog.ShowDialog() == true ? dialog.FileName : null;
     }
 
+    /// <summary>弹窗选择存档目录(云存档同步的本地端),仅记录路径不复制文件;取消返回 null。</summary>
+    public string? PickSaveFolder()
+    {
+        var dialog = new OpenFolderDialog
+        {
+            Title = "选择该游戏的存档目录",
+            Multiselect = false,
+        };
+        return dialog.ShowDialog() == true ? dialog.FolderName : null;
+    }
+
     /// <summary>启动指定路径;能拿到进程句柄时返回 Process 以便监视游玩时长。</summary>
     public LaunchOutcome Launch(string? path)
     {

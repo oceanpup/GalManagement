@@ -25,6 +25,9 @@
         <DataTemplate DataType="{x:Type vm:StatsViewModel}">
             <views:StatsView/>
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:CloudSaveViewModel}">
+            <views:CloudSaveView/>
+        </DataTemplate>
         <DataTemplate DataType="{x:Type vm:SettingsViewModel}">
             <views:SettingsView/>
         </DataTemplate>
@@ -95,6 +98,9 @@
                         <RadioButton Style="{StaticResource NavRadio}" GroupName="Nav"
                                      Content="统计" Margin="0,4,0,0"
                                      Command="{Binding ShowStatsCommand}"/>
+                        <RadioButton Style="{StaticResource NavRadio}" GroupName="Nav"
+                                     Content="云存档" Margin="0,4,0,0"
+                                     Command="{Binding ShowCloudCommand}"/>
                         <RadioButton Style="{StaticResource NavRadio}" GroupName="Nav"
                                      Content="设置" Margin="0,4,0,0"
                                      Command="{Binding ShowSettingsCommand}"/>

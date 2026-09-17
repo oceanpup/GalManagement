@@ -59,7 +59,9 @@ public class Database
                 UpdatedAt     TEXT    NOT NULL,
                 ThumbOffsetX  REAL    NOT NULL DEFAULT 0.5,
                 ThumbOffsetY  REAL    NOT NULL DEFAULT 0.5,
-                LaunchPath    TEXT
+                LaunchPath    TEXT,
+                SavePath      TEXT,
+                CloudDir      TEXT
             );
             """;
         cmd.ExecuteNonQuery();
@@ -87,6 +89,22 @@ public class Database
             using var alter = conn.CreateCommand();
             alter.CommandText = "ALTER TABLE Games ADD COLUMN LaunchPath TEXT";
             alter.ExecuteNonQuery();
+        }
+
+        // 迁移:为旧数据库补充存档目录列(留空即不参与云存档同步)
+        if (!ColumnExists(conn, "Games", "SavePath"))
+        {
+            using var alterSave = conn.CreateCommand();
+            alterSave.CommandText = "ALTER TABLE Games ADD COLUMN SavePath TEXT";
+            alterSave.ExecuteNonQuery();
+        }
+
+        // 迁移:为旧数据库补充云端目录名列(留空则按游戏名算,与加这列之前的行为一致)
+        if (!ColumnExists(conn, "Games", "CloudDir"))
+        {
+            using var alterCloud = conn.CreateCommand();
+            alterCloud.CommandText = "ALTER TABLE Games ADD COLUMN CloudDir TEXT";
+            alterCloud.ExecuteNonQuery();
         }
 
         using var reviewCmd = conn.CreateCommand();

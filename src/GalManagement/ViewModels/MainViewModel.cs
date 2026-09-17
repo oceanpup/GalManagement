@@ -16,6 +16,7 @@ public partial class MainViewModel : ObservableObject
 
     public GameLibraryViewModel Library { get; }
     public StatsViewModel Stats { get; }
+    public CloudSaveViewModel Cloud { get; }
     public SettingsViewModel Settings { get; }
 
     /// <summary>共享设置实例(标题栏等直接绑定此对象)。</summary>
@@ -39,6 +40,7 @@ public partial class MainViewModel : ObservableObject
     public RelayCommand ToggleThemeCommand { get; }
     public RelayCommand ShowLibraryCommand { get; }
     public RelayCommand ShowStatsCommand { get; }
+    public RelayCommand ShowCloudCommand { get; }
     public RelayCommand ShowSettingsCommand { get; }
 
     public MainViewModel(
@@ -51,16 +53,19 @@ public partial class MainViewModel : ObservableObject
         GameLauncherService launcher,
         PlayTimeTracker tracker,
         IconService iconService,
-        UpdateService updateService)
+        UpdateService updateService,
+        CloudSaveService cloudSave)
     {
         _bgService = bgService;
         _themeService = themeService;
         _settingsService = settingsService;
         _iconService = iconService;
 
-        Library = new GameLibraryViewModel(repo, tagRepo, coverService, tracker);
+        Library = new GameLibraryViewModel(repo, tagRepo, coverService, tracker, cloudSave);
         Stats = new StatsViewModel(repo, tagRepo);
-        Settings = new SettingsViewModel(settingsService.Current, settingsService, iconService, updateService);
+        Cloud = new CloudSaveViewModel(repo, settingsService, cloudSave);
+        Settings = new SettingsViewModel(
+            settingsService.Current, settingsService, iconService, updateService);
 
         _currentView = Library;
         _backgroundPath = bgService.CurrentBackgroundPath;
@@ -77,6 +82,11 @@ public partial class MainViewModel : ObservableObject
         {
             Stats.Refresh();
             CurrentView = Stats;
+        });
+        ShowCloudCommand = new RelayCommand(() =>
+        {
+            Cloud.RefreshOnEnter();
+            CurrentView = Cloud;
         });
         ShowSettingsCommand = new RelayCommand(() => CurrentView = Settings);
     }

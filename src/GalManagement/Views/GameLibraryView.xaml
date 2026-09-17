@@ -195,13 +195,20 @@
                                     </StackPanel>
                                 </StackPanel>
 
-                                <Button Grid.Column="2" Style="{StaticResource GlassButton}" Content="启动"
-                                        VerticalAlignment="Center" Margin="10,0,0,0"
-                                        MinWidth="56" MinHeight="34" Padding="0" FontSize="13"
-                                        Background="{DynamicResource AccentGlassBrush}"
-                                        IsEnabled="{Binding IsRunning, Converter={StaticResource InverseBool}}"
-                                        Command="{Binding DataContext.LaunchCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
-                                        CommandParameter="{Binding}"/>
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center"
+                                            Margin="10,0,0,0">
+                                    <Button Style="{StaticResource GlassButton}" Content="存档"
+                                            MinWidth="56" MinHeight="34" Padding="0" FontSize="13"
+                                            ToolTip="与百度网盘比对 / 上传 / 下载该游戏的存档;需要先绑定账号并在编辑游戏里指定存档目录。"
+                                            Command="{Binding DataContext.SaveSyncCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                            CommandParameter="{Binding}"/>
+                                    <Button Style="{StaticResource GlassButton}" Content="启动" Margin="8,0,0,0"
+                                            MinWidth="56" MinHeight="34" Padding="0" FontSize="13"
+                                            Background="{DynamicResource AccentGlassBrush}"
+                                            IsEnabled="{Binding IsRunning, Converter={StaticResource InverseBool}}"
+                                            Command="{Binding DataContext.LaunchCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                            CommandParameter="{Binding}"/>
+                                </StackPanel>
                             </Grid>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
@@ -283,6 +290,10 @@
                                 <TextBlock Text="{Binding SelectedGame.SessionElapsedText}" Margin="0,4,0,0" FontSize="12"
                                            Foreground="{DynamicResource AccentBrush}"
                                            Visibility="{Binding SelectedGame.IsRunning, Converter={StaticResource BoolToVisibility}}"/>
+
+                                <TextBlock Text="{Binding SelectedGame.SaveSyncText}" Margin="0,4,0,0" FontSize="12"
+                                           Foreground="{DynamicResource AccentBrush}"
+                                           Visibility="{Binding SelectedGame.SaveSyncText, Converter={StaticResource NullToVisibility}}"/>
 
                                 <TextBlock Text="概述" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,12,0,4" FontSize="12"/>
                                 <TextBlock Text="{Binding SelectedGame.Summary}" Foreground="{DynamicResource TextPrimaryBrush}" TextWrapping="Wrap"/>

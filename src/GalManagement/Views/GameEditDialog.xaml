@@ -11,6 +11,32 @@
         ShowInTaskbar="False"
         FontFamily="Microsoft YaHei UI">
 
+    <Window.Resources>
+        <!-- 选择器里的候选行:整行可点,悬停高亮 -->
+        <Style x:Key="CloudDirChoiceButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="bd" Background="{TemplateBinding Background}"
+                                CornerRadius="6" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Left"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background"
+                                        Value="{DynamicResource NavActiveBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
     <Border CornerRadius="12"
             Background="{DynamicResource WindowBackgroundBrush}"
             BorderBrush="{DynamicResource BorderBrush}"
@@ -160,6 +186,76 @@
                                 MinWidth="68" MinHeight="42" Padding="0" FontSize="13"
                                 Command="{Binding PickLaunchCommand}"/>
                     </Grid>
+
+                    <!-- 存档目录 -->
+                    <TextBlock Text="存档目录" Margin="0,16,0,6" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Style="{StaticResource GlassTextBox}" IsReadOnly="True"
+                                 Text="{Binding Current.SavePath, UpdateSourceTrigger=PropertyChanged}"/>
+                        <Button Grid.Column="1" Style="{StaticResource GlassButton}" Content="选择" Margin="8,0,0,0"
+                                MinWidth="68" MinHeight="42" Padding="0" FontSize="13"
+                                Command="{Binding PickSaveFolderCommand}"/>
+                    </Grid>
+                    <TextBlock Text="指向该游戏真正写存档的目录;留空则这个游戏不参与云存档同步。"
+                               FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap"
+                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+
+                    <!-- 云端目录名 -->
+                    <TextBlock Text="云端目录名" Margin="0,16,0,6" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox Style="{StaticResource GlassTextBox}"
+                                 Text="{Binding Current.CloudDir, UpdateSourceTrigger=PropertyChanged}"/>
+                        <Button Grid.Column="1" Style="{StaticResource GlassButton}" Content="选择已有"
+                                Margin="8,0,0,0" MinWidth="68" MinHeight="42" Padding="0" FontSize="13"
+                                ToolTip="在网盘上已有的云端存档目录里搜一个填进来,免得手打错字另开一个空目录。"
+                                Command="{Binding ToggleCloudDirPickerCommand}"/>
+                    </Grid>
+
+                    <!-- 云端目录选择器:关键字随打随筛,点一行即填入 -->
+                    <Border Margin="0,8,0,0" Padding="10" CornerRadius="8"
+                            Background="{DynamicResource InputBackgroundBrush}"
+                            Visibility="{Binding IsCloudDirPickerOpen, Converter={StaticResource BoolToVisibility}}">
+                        <StackPanel>
+                            <TextBox Style="{StaticResource GlassTextBox}" MinHeight="34" FontSize="12"
+                                     Text="{Binding CloudDirQuery, UpdateSourceTrigger=PropertyChanged}"
+                                     ToolTip="打几个字就地筛选下面的目录名;留空则列出全部。"/>
+                            <TextBlock Text="{Binding CloudDirListStatus}" FontSize="11" Margin="0,8,0,0"
+                                       TextWrapping="Wrap"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            <ScrollViewer MaxHeight="150" VerticalScrollBarVisibility="Auto" Margin="0,6,0,0">
+                                <ItemsControl ItemsSource="{Binding CloudDirChoices}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Button Style="{StaticResource CloudDirChoiceButton}"
+                                                    Command="{Binding DataContext.PickCloudDirCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    CommandParameter="{Binding}">
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding DirName}" FontSize="12"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                                    <TextBlock Text="{Binding Detail}" FontSize="11" Margin="0,2,0,0"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                                </StackPanel>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </ScrollViewer>
+                        </StackPanel>
+                    </Border>
+
+                    <TextBlock Text="云端存档放在这个文件夹里(网盘「我的应用数据」下)。留空则用游戏名,保存时会自动填上;填上之后改游戏名不会再动它,免得云端另开一个目录把旧存档甩掉。手动改它等于换一个云端目录,旧目录不会跟过来,记得重新上传一次。点「选择已有」可以从网盘上已经存在的目录里挑,避免手抖多建一个空目录。"
+                               FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap"
+                               Foreground="{DynamicResource TextSecondaryBrush}"/>
 
                     <!-- 通关日期 -->
                     <TextBlock Text="通关日期" Margin="0,16,0,6" Foreground="{DynamicResource TextSecondaryBrush}"/>

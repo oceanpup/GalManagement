@@ -1,0 +1,184 @@
+<UserControl x:Class="GalManagement.Views.CloudSaveView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             FontFamily="Microsoft YaHei UI">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+            <!-- 账号 -->
+            <Border Style="{StaticResource GlassCard}" Padding="20" Margin="0,0,0,12">
+                <StackPanel>
+                    <TextBlock Text="账号" FontSize="15" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <TextBlock Text="把每个游戏的存档目录上传到百度网盘,换机器时再拉回来。"
+                               FontSize="12" Margin="0,4,0,16"
+                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding BoundAccountText}" FontSize="13" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        <Button Style="{StaticResource GlassButton}" Content="绑定" Margin="16,0,0,0"
+                                MinWidth="80" MinHeight="36" Padding="0" FontSize="13"
+                                Background="{DynamicResource AccentGlassBrush}"
+                                Visibility="{Binding IsBound, Converter={StaticResource InverseBoolToVisibility}}"
+                                Command="{Binding BindAccountCommand}"/>
+                        <Button Style="{StaticResource DangerButton}" Content="解绑" Margin="16,0,0,0"
+                                MinWidth="80" MinHeight="36" Padding="0" FontSize="13"
+                                Visibility="{Binding IsBound, Converter={StaticResource BoolToVisibility}}"
+                                Command="{Binding UnbindAccountCommand}"/>
+                    </StackPanel>
+
+                    <TextBlock Text="AppKey" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12"
+                               Margin="0,18,0,6"/>
+                    <TextBox Style="{StaticResource GlassTextBox}" Width="360" HorizontalAlignment="Left"
+                             Text="{Binding BaiduAppKey, UpdateSourceTrigger=PropertyChanged}"/>
+
+                    <TextBlock Text="SecretKey" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12"
+                               Margin="0,12,0,6"/>
+                    <TextBox Style="{StaticResource GlassTextBox}" Width="360" HorizontalAlignment="Left"
+                             Text="{Binding BaiduSecretKey, UpdateSourceTrigger=PropertyChanged}"/>
+
+                    <Button Style="{StaticResource GlassButton}" Content="保存凭证"
+                            HorizontalAlignment="Left" Margin="0,12,0,0"
+                            MinWidth="90" MinHeight="36" Padding="0" FontSize="13"
+                            Command="{Binding SaveCredentialsCommand}"/>
+
+                    <TextBlock FontSize="11" Margin="0,10,0,0" TextWrapping="Wrap"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               Text="在 pan.baidu.com/union 创建「软件/客户端应用」获取这两项。应用名建议填「旮旯给木管理」——它会直接成为云端沙箱目录名;另外记得在应用详情里单独申请「上传权限」,否则上传会报 31024。留空则使用程序内置凭证。"/>
+
+                    <TextBlock Text="{Binding AccountStatus}" FontSize="12" Margin="0,10,0,0" TextWrapping="Wrap"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               Visibility="{Binding AccountStatus, Converter={StaticResource NullToVisibility}}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- 同步档位 -->
+            <Border Style="{StaticResource GlassCard}" Padding="20" Margin="0,0,0,12">
+                <StackPanel>
+                    <TextBlock Text="同步档位" FontSize="15" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <TextBlock Text="决定启动游戏与游玩结束时要不要自动同步存档。" FontSize="12" Margin="0,4,0,16"
+                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+
+                    <TextBlock Text="启动游戏前" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12"
+                               Margin="0,0,0,6"/>
+                    <ComboBox Style="{StaticResource GlassComboBox}" Width="200" HorizontalAlignment="Left"
+                              ItemsSource="{Binding SyncModeOptions}" DisplayMemberPath="Text"
+                              SelectedValuePath="Mode" SelectedValue="{Binding BeforeLaunchMode}"/>
+
+                    <TextBlock Text="游玩结束后" Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12"
+                               Margin="0,12,0,6"/>
+                    <ComboBox Style="{StaticResource GlassComboBox}" Width="200" HorizontalAlignment="Left"
+                              ItemsSource="{Binding SyncModeOptions}" DisplayMemberPath="Text"
+                              SelectedValuePath="Mode" SelectedValue="{Binding AfterPlayMode}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- 云端存档一览 -->
+            <Border Style="{StaticResource GlassCard}" Padding="20" Margin="0,0,0,12">
+                <StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="云端存档" FontSize="15" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock Text="网盘「我的应用数据 → 旮旯给木管理」下已经存过存档的游戏。"
+                                       FontSize="12" Margin="0,4,0,0"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        </StackPanel>
+                        <Button Grid.Column="1" Style="{StaticResource GlassButton}" Content="刷新"
+                                MinWidth="80" MinHeight="36" Padding="0" FontSize="13"
+                                VerticalAlignment="Top"
+                                Command="{Binding RefreshCommand}"/>
+                    </Grid>
+
+                    <!-- 表头 -->
+                    <Grid Margin="0,18,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="200"/>
+                            <ColumnDefinition Width="200"/>
+                            <ColumnDefinition Width="140"/>
+                            <ColumnDefinition Width="130"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="游戏名称" FontSize="12" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        <TextBlock Grid.Column="1" Text="云端目录名" FontSize="12"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        <TextBlock Grid.Column="2" Text="大小" FontSize="12"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        <TextBlock Grid.Column="3" Text="最新存档" FontSize="12"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        <TextBlock Grid.Column="4" Text="备注" FontSize="12"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        <TextBlock Grid.Column="5" Text="操作" FontSize="12"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    </Grid>
+
+                    <Border Height="1" Margin="0,8,0,0" Background="{DynamicResource BorderBrush}"/>
+
+                    <ItemsControl ItemsSource="{Binding CloudGames}" Margin="0,4,0,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,8,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="200"/>
+                                        <ColumnDefinition Width="200"/>
+                                        <ColumnDefinition Width="140"/>
+                                        <ColumnDefinition Width="130"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Text="{Binding GameName}" FontSize="13"
+                                               TextTrimming="CharacterEllipsis"
+                                               ToolTip="{Binding GameName}">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground"
+                                                        Value="{DynamicResource TextPrimaryBrush}"/>
+                                                <Style.Triggers>
+                                                    <!-- 云端有、本地认不出来的目录(比如换了机器或手动改了目录名)压暗,方便一眼分辨 -->
+                                                    <DataTrigger Binding="{Binding IsOrphan}" Value="True">
+                                                        <Setter Property="Foreground"
+                                                                Value="{DynamicResource TextSecondaryBrush}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+
+                                    <TextBlock Grid.Column="1" Text="{Binding DirName}" FontSize="13"
+                                               TextTrimming="CharacterEllipsis" ToolTip="{Binding DirName}"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding SizeText}" FontSize="13"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                    <TextBlock Grid.Column="3" Text="{Binding MtimeText}" FontSize="13"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                    <TextBlock Grid.Column="4" Text="{Binding Note}" FontSize="12"
+                                               TextWrapping="Wrap"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+
+                                    <!-- 删除整个游戏的云端存档(含子目录),不碰本地存档 -->
+                                    <Button Grid.Column="5" Style="{StaticResource DangerButton}" Content="删除"
+                                            Margin="12,0,0,0" MinWidth="56" MinHeight="34" Padding="0" FontSize="13"
+                                            VerticalAlignment="Center"
+                                            ToolTip="删除这个游戏在百度网盘上的整个存档目录;本地存档不受影响。"
+                                            Command="{Binding DataContext.DeleteCloudCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                            CommandParameter="{Binding}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <TextBlock Text="{Binding ListStatus}" FontSize="12" Margin="0,14,0,0" TextWrapping="Wrap"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               Visibility="{Binding ListStatus, Converter={StaticResource NullToVisibility}}"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

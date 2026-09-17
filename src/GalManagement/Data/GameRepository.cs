@@ -8,7 +8,7 @@ namespace GalManagement.Data;
 public class GameRepository
 {
     private const string Columns =
-        "Id, Name, CoverPath, Rating, Summary, Status, Developer, CompletedDate, PlayTimeHours, CreatedAt, UpdatedAt, ThumbOffsetX, ThumbOffsetY, LaunchPath, " +
+        "Id, Name, CoverPath, Rating, Summary, Status, Developer, CompletedDate, PlayTimeHours, CreatedAt, UpdatedAt, ThumbOffsetX, ThumbOffsetY, LaunchPath, SavePath, CloudDir, " +
         "(SELECT AVG(GameReviews.Rating) FROM GameReviews WHERE GameReviews.GameId = Games.Id) AS AvgReviewRating";
 
     private readonly Database _db;
@@ -90,8 +90,8 @@ public class GameRepository
         using var conn = _db.CreateConnection();
         using var cmd = conn.CreateCommand();
         cmd.CommandText = """
-            INSERT INTO Games (Name, CoverPath, Rating, Summary, Status, Developer, CompletedDate, PlayTimeHours, CreatedAt, UpdatedAt, ThumbOffsetX, ThumbOffsetY, LaunchPath)
-            VALUES (@name, @cover, @rating, @summary, @status, @developer, @completed, @hours, @created, @updated, @thumbX, @thumbY, @launch);
+            INSERT INTO Games (Name, CoverPath, Rating, Summary, Status, Developer, CompletedDate, PlayTimeHours, CreatedAt, UpdatedAt, ThumbOffsetX, ThumbOffsetY, LaunchPath, SavePath, CloudDir)
+            VALUES (@name, @cover, @rating, @summary, @status, @developer, @completed, @hours, @created, @updated, @thumbX, @thumbY, @launch, @save, @cloudDir);
             SELECT last_insert_rowid();
             """;
         AddParams(cmd, game);
@@ -111,7 +111,8 @@ public class GameRepository
                 Name = @name, CoverPath = @cover, Rating = @rating, Summary = @summary,
                 Status = @status, Developer = @developer, CompletedDate = @completed,
                 PlayTimeHours = @hours, UpdatedAt = @updated,
-                ThumbOffsetX = @thumbX, ThumbOffsetY = @thumbY, LaunchPath = @launch
+                ThumbOffsetX = @thumbX, ThumbOffsetY = @thumbY, LaunchPath = @launch,
+                SavePath = @save, CloudDir = @cloudDir
             WHERE Id = @id;
             """;
         AddParams(cmd, game);
@@ -167,12 +168,14 @@ public class GameRepository
         cmd.Parameters.AddWithValue("@thumbX", game.ThumbOffsetX);
         cmd.Parameters.AddWithValue("@thumbY", game.ThumbOffsetY);
         cmd.Parameters.AddWithValue("@launch", (object?)game.LaunchPath ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@save", (object?)game.SavePath ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@cloudDir", (object?)game.CloudDir ?? DBNull.Value);
     }
 
     private static Game ReadGame(SqliteDataReader r)
     {
         var rating = r.IsDBNull(3) ? 0 : r.GetDouble(3);
-        var avgReview = r.IsDBNull(14) ? (double?)null : r.GetDouble(14);
+        var avgReview = r.IsDBNull(16) ? (double?)null : r.GetDouble(16);
 
         return new Game
         {
@@ -190,6 +193,8 @@ public class GameRepository
             ThumbOffsetX = r.IsDBNull(11) ? 0.5 : r.GetDouble(11),
             ThumbOffsetY = r.IsDBNull(12) ? 0.5 : r.GetDouble(12),
             LaunchPath = r.IsDBNull(13) ? null : r.GetString(13),
+            SavePath = r.IsDBNull(14) ? null : r.GetString(14),
+            CloudDir = r.IsDBNull(15) ? null : r.GetString(15),
             EffectiveRating = avgReview ?? rating,
         };
     }
