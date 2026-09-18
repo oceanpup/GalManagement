@@ -35,7 +35,11 @@ public partial class MainWindow : Window
         vm.Library.DetailRequested += OnDetailRequested;
         vm.Library.SaveSyncRequested += OnSaveSyncRequested;
         vm.Cloud.BindAccountRequested += OnBindAccountRequested;
+        vm.Cloud.HelpRequested += OnCloudHelpRequested;
     }
+
+    // 纯静态说明文字,开完就丢,不需要回传任何东西
+    private void OnCloudHelpRequested() => new CloudSaveHelpDialog { Owner = this }.ShowDialog();
 
     private void OnBindAccountRequested()
     {

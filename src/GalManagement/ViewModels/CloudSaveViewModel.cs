@@ -78,11 +78,15 @@ public partial class CloudSaveViewModel : ObservableObject
     public RelayCommand BindAccountCommand { get; }
     public RelayCommand UnbindAccountCommand { get; }
     public RelayCommand SaveCredentialsCommand { get; }
+    public RelayCommand ShowHelpCommand { get; }
     public IAsyncRelayCommand RefreshCommand { get; }
     public IAsyncRelayCommand<CloudGameRow> DeleteCloudCommand { get; }
 
     /// <summary>需要弹出绑定窗口;由 MainWindow 接住并开窗(与编辑游戏弹窗同一套路)。</summary>
     public event Action? BindAccountRequested;
+
+    /// <summary>需要弹出使用说明;同样交给 MainWindow 开窗。</summary>
+    public event Action? HelpRequested;
 
     public CloudSaveViewModel(
         GameRepository repo, SettingsService settingsService, CloudSaveService cloudSave)
@@ -102,6 +106,7 @@ public partial class CloudSaveViewModel : ObservableObject
             () => _cloudSave.HasCredentials);
         UnbindAccountCommand = new RelayCommand(UnbindAccount);
         SaveCredentialsCommand = new RelayCommand(SaveCredentials);
+        ShowHelpCommand = new RelayCommand(() => HelpRequested?.Invoke());
         RefreshCommand = new AsyncRelayCommand(LoadAsync, () => !IsLoading);
         DeleteCloudCommand = new AsyncRelayCommand<CloudGameRow>(DeleteCloudAsync);
     }

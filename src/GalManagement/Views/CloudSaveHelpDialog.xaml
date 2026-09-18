@@ -1,0 +1,162 @@
+<Window x:Class="GalManagement.Views.CloudSaveHelpDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="云存档使用说明"
+        Width="620" Height="660"
+        WindowStartupLocation="CenterOwner"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        FontFamily="Microsoft YaHei UI">
+
+    <Window.Resources>
+        <!-- 全文都是静态说明文字,所以按「小节标题 / 段首总述 / 步骤条目」定三种样式,省得逐句写属性 -->
+        <Style x:Key="HelpHeading" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+            <Setter Property="Margin" Value="0,22,0,0"/>
+        </Style>
+
+        <Style x:Key="HelpLead" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12.5"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="LineHeight" Value="20"/>
+            <Setter Property="Margin" Value="0,7,0,0"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+        </Style>
+
+        <Style x:Key="HelpItem" TargetType="TextBlock" BasedOn="{StaticResource HelpLead}">
+            <Setter Property="Margin" Value="12,5,0,0"/>
+        </Style>
+    </Window.Resources>
+
+    <Border CornerRadius="12"
+            Background="{DynamicResource WindowBackgroundBrush}"
+            BorderBrush="{DynamicResource BorderBrush}"
+            BorderThickness="1">
+        <Grid Margin="36,28">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel>
+                <TextBlock Text="云存档使用说明" FontSize="18" FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+                <TextBlock Text="从注册应用凭证到换机器恢复存档,一趟走完。" FontSize="12" Margin="0,4,0,0"
+                           Foreground="{DynamicResource TextSecondaryBrush}"/>
+            </StackPanel>
+
+            <ScrollViewer Grid.Row="1" Margin="0,6,0,0" VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="0,0,18,0">
+
+                    <!-- 一 -->
+                    <TextBlock Style="{StaticResource HelpHeading}" Margin="0,2,0,0" Text="云存档是做什么的"/>
+                    <TextBlock Style="{StaticResource HelpLead}"
+                               Text="把每个游戏真正的存档目录上传到百度网盘「我的应用数据 → 旮旯给木管理」下,按游戏分开存放。换机器或重装系统后,在游戏库里点「存档」把云端存档拉回来就能接着玩。应用只负责搬运文件,绝不改动存档内容。"/>
+
+                    <!-- 二 -->
+                    <TextBlock Style="{StaticResource HelpHeading}" Text="第一步:拿到百度网盘开放平台的凭证"/>
+                    <TextBlock Style="{StaticResource HelpLead}"
+                               Text="云存档走的是百度网盘开放平台,得先有一个属于你自己的应用凭证(相当于本应用的身份证)。这一步只做一次:"/>
+                    <TextBlock Style="{StaticResource HelpItem}"
+                               Text="1. 打开 pan.baidu.com/union,用百度账号登录,进「控制台 → 创建应用」。"/>
+                    <TextBlock Style="{StaticResource HelpItem}"
+                               Text="2. 应用类型选「软件 / 客户端应用」,不要选网站。"/>
+                    <TextBlock Style="{StaticResource HelpItem}"
+                               Text="3. 应用名建议就填「旮旯给木管理」——这个名字会直接变成云端沙箱目录名,也就是你在网盘里看到的那个文件夹。"/>
+                    <TextBlock Style="{StaticResource HelpItem}"
+                               Text="4. 创建完成后记下 AppID / AppKey / SecretKey。"/>
+                    <TextBlock Style="{StaticResource HelpItem}"
+                               Text="5. 在应用详情里单独提交一次「上传权限」申请。不申请的话上传会直接报 31024,而且这一项可能要等审核。"/>
+                    <TextBlock Style="{StaticResource HelpItem}"
+                               Text="6. 回到本页,把 AppKey 和 SecretKey 填进上面的输入框,点「保存凭证」。"/>
+
+                    <!-- 三 -->
+                    <TextBlock Style="{StaticResource HelpHeading}" Text="第二步:绑定账号"/>
+                    <TextBlock Style="{StaticResource HelpItem}"
+                               Text="1. 凭证填好后点「绑定」,弹出的窗口里会显示一串用户码。"/>
+                    <TextBlock Style="{StaticResource HelpItem}"
+                               Text="2. 点「复制并打开授权页」,在浏览器里登录你自己的百度账号,把用户码填进去并同意授权。"/>
+                    <TextBlock Style="{StaticResource HelpItem}"
+                               Text="3. 弹窗会自动等到授权结果,变成「已绑定:昵称」就算成功。"/>
+                    <TextBlock Style="{StaticResource HelpLead}"
+                               Text="用的是设备码授权,整个过程不需要、也不应该把百度账号密码交给本应用。用户码有时效,过期就关掉窗口重新绑定一次。"/>
+
+                    <!-- 四 -->
+                    <TextBlock Style="{StaticResource HelpHeading}" Text="第三步:给游戏填好两个目录"/>
+                    <TextBlock Style="{StaticResource HelpItem}"
+                               Text="1. 去游戏库编辑一个游戏,「存档目录」点「选择」,指到该游戏真正写存档的文件夹。这是唯一需要手动指定的东西;留空的游戏完全不参与云存档。"/>
+                    <TextBlock Style="{StaticResource HelpItem}"
+                               Text="2. 「云端目录名」可以留空,留空就用游戏名,第一次上传时自动填上。"/>
+                    <TextBlock Style="{StaticResource HelpItem}"
+                               Text="3. 想复用网盘上已经存在的目录,点「选择已有」,在列表里搜一个填进去,省得手打出错又另开一个空目录。"/>
+                    <TextBlock Style="{StaticResource HelpLead}"
+                               Text="云端目录名一旦填上,之后再改游戏名也不会动它——这是故意的,免得云端另开一个目录把旧存档甩掉。手动改它等于换一个云端目录,旧目录不会跟过来,记得重新上传一次。"/>
+
+                    <!-- 五 -->
+                    <TextBlock Style="{StaticResource HelpHeading}" Text="同步档位怎么选"/>
+                    <TextBlock Style="{StaticResource HelpItem}"
+                               Text="每次询问(默认):启动游戏前先比对本地和云端,两边不一致就弹窗问你要用哪一边;游玩结束后弹窗问要不要上传。"/>
+                    <TextBlock Style="{StaticResource HelpItem}"
+                               Text="自动同步:全自动。启动前把较新的一边静默同步过来,游玩结束后静默上传。"/>
+                    <TextBlock Style="{StaticResource HelpItem}"
+                               Text="不同步:完全不碰云端,启动速度和不装这功能时一样。"/>
+                    <TextBlock Style="{StaticResource HelpLead}"
+                               Text="判断新旧只看时间:取两侧所有存档文件里最晚的修改时间,相差 2 秒以内算相同(网盘的时间戳精度只到秒,不设容差会来回横跳)。上传会在最后多传一个 _meta.json 当完整性标记,云端缺了它,说明上次没传完,列表里会标出来。"/>
+
+                    <!-- 六 -->
+                    <TextBlock Style="{StaticResource HelpHeading}" Text="手动上传 / 下载"/>
+                    <TextBlock Style="{StaticResource HelpLead}"
+                               Text="游戏库列表里每行的「存档」按钮会打开同步窗口,里面并排显示两侧的文件数和最新时间:"/>
+                    <TextBlock Style="{StaticResource HelpItem}"
+                               Text="上传到云端:把本地存档传上去,覆盖云端同名文件。"/>
+                    <TextBlock Style="{StaticResource HelpItem}"
+                               Text="从云端覆盖本地:把云端存档拉回来,并把文件时间改回云端的时间;这一步会覆盖本地存档,按钮上写明了不可逆,想清楚再点。"/>
+                    <TextBlock Style="{StaticResource HelpLead}"
+                               Text="上传是增量覆盖:本地删掉的文件,云端不会跟着删。要清干净就去下面的列表点「删除」。"/>
+
+                    <!-- 七 -->
+                    <TextBlock Style="{StaticResource HelpHeading}" Text="云端存档一览与删除"/>
+                    <TextBlock Style="{StaticResource HelpLead}"
+                               Text="本页下面的列表列出网盘上已经有存档的游戏(游戏名、云端目录名、大小、最新时间)。三种需要留意的状态:"/>
+                    <TextBlock Style="{StaticResource HelpItem}"
+                               Text="「本地没有对应游戏」:云端有这个目录,但本地游戏库认不出来(换了机器,或者游戏删了、云端目录名改过)。存档还在,认领回去就能用。"/>
+                    <TextBlock Style="{StaticResource HelpItem}"
+                               Text="「上次没传完」:上次上传中途断了,云端存档不完整,重新上传一次就好。"/>
+                    <TextBlock Style="{StaticResource HelpItem}"
+                               Text="点「删除」会删掉该游戏在网盘上的整个存档目录,删了不能恢复,但本地存档不受影响。百度网盘的删除是异步的,提交后那一行可能还看得见,稍等片刻点「刷新」确认。"/>
+
+                    <!-- 八 -->
+                    <TextBlock Style="{StaticResource HelpHeading}" Text="遇到这些情况不用慌"/>
+                    <TextBlock Style="{StaticResource HelpItem}"
+                               Text="上传报 31024:开放平台的「上传权限」还没批下来,回应用详情里确认一下。"/>
+                    <TextBlock Style="{StaticResource HelpItem}"
+                               Text="提示授权已失效:网盘的令牌过期且自动刷新失败(长期没打开应用、改过密码等),重新绑定一次就行。"/>
+                    <TextBlock Style="{StaticResource HelpItem}"
+                               Text="同步失败但游戏照样启动:这是故意的。网络不通、超时、没授权时,云存档只提示一句,绝不挡住你玩游戏。"/>
+                    <TextBlock Style="{StaticResource HelpItem}"
+                               Text="首次上传很慢:网盘接口有频率限制,存档文件多时只能挨个传,几十秒都算正常;还在显示进度就说明在动。"/>
+                    <TextBlock Style="{StaticResource HelpItem}"
+                               Text="云端目录名里的斜杠、冒号、问号、星号、引号之类会被自动清掉,免得在网盘上建不出目录。"/>
+                    <TextBlock Style="{StaticResource HelpItem}"
+                               Text="刚玩完就直接关掉整个应用时不会弹上传提示(退出时弹窗体验太差)。不用惦记:下次启动比对时会看到本地较新,照样提示你上传。"/>
+
+                    <TextBlock Style="{StaticResource HelpLead}" Margin="0,22,0,0"
+                               Text="凭证和令牌只保存在本机的 data\settings.json 里,不会上传到任何第三方服务器,也不会进入公开的代码仓库。"/>
+                </StackPanel>
+            </ScrollViewer>
+
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+                <Button Style="{StaticResource GlassButton}" Content="知道了"
+                        MinWidth="100" MinHeight="42" Padding="0" FontSize="14"
+                        Background="{DynamicResource AccentGlassBrush}"
+                        Click="Close_Click"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

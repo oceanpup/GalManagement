@@ -7,11 +7,24 @@
             <!-- 账号 -->
             <Border Style="{StaticResource GlassCard}" Padding="20" Margin="0,0,0,12">
                 <StackPanel>
-                    <TextBlock Text="账号" FontSize="15" FontWeight="SemiBold"
-                               Foreground="{DynamicResource TextPrimaryBrush}"/>
-                    <TextBlock Text="把每个游戏的存档目录上传到百度网盘,换机器时再拉回来。"
-                               FontSize="12" Margin="0,4,0,16"
-                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="账号" FontSize="15" FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock Text="把每个游戏的存档目录上传到百度网盘,换机器时再拉回来。"
+                                       FontSize="12" Margin="0,4,0,16"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        </StackPanel>
+                        <Button Grid.Column="1" Style="{StaticResource GlassButton}" Content="使用说明"
+                                MinWidth="90" MinHeight="36" Padding="0" FontSize="13"
+                                VerticalAlignment="Top"
+                                ToolTip="云存档的完整操作步骤:拿凭证、绑账号、填目录、同步与删除。"
+                                Command="{Binding ShowHelpCommand}"/>
+                    </Grid>
 
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="{Binding BoundAccountText}" FontSize="13" VerticalAlignment="Center"
